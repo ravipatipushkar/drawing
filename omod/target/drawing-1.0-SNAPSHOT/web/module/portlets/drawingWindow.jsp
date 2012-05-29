@@ -2,6 +2,8 @@
 
 <openmrs:htmlInclude file="/moduleResources/drawing/paint.js"/>
 <openmrs:htmlInclude file="/moduleResources/drawing/paint.css"/>
+<openmrs:htmlInclude file="/moduleResources/drawing/colorpicker.js"/>
+<openmrs:htmlInclude file="/moduleResources/drawing/colorpicker.css"/>
  
          <script type="text/javascript">
          $j(document).ready(function(){
@@ -31,6 +33,9 @@
       		 	<option>6</option>
       		 	<option>8</option>
       		 </select>
+      		 </div>
+      		  <div id="colorSelector" style="float: left">
+      		    <div></div> 	
       		 </div>
               <div style="clear:both;"></div>
       		

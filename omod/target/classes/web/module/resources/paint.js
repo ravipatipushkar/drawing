@@ -45,6 +45,24 @@
                 }
                  
               });
+               
+               
+               $j('#colorSelector').ColorPicker({
+					color: '#ff0000',
+					onShow: function (colpkr) {
+							$j(colpkr).fadeIn(500);
+							return false;
+					},
+					onHide: function (colpkr) {
+							$j(colpkr).fadeOut(500);
+							return false;
+					},
+					onChange: function (hsb, hex, rgb) {
+							$j('#colorSelector div').css('backgroundColor', '#' + hex);
+							selectedColor='#'+hex;
+							
+					}
+				});
               
                 $j('#saveText').click(function() {
                     saveTextFromArea(clickX,clickY+parseInt(fontSize));   
