@@ -3,7 +3,6 @@
 
 <%@ include file="template/localHeader.jsp"%>
 
-<p>Hello ${user.systemId}!</p>
 
 <openmrs:portlet url="drawingWindow.portlet" id="drawingWindow" moduleId="drawing" />
 

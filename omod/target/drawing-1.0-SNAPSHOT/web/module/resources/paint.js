@@ -1,40 +1,38 @@
          var clickX=0;
          var clickY=0;
-         var selectedool="";
+         var selectedTool="";
          var context;
          var canvas;
          var thickness=5;
-         var selectedColor='red';
+         var selectedColor='#ff0000';
          var canvasWidth;
          var canvasHeight;
          var bold='';
          var tools=['pencil','eraser','text'];
          var italic='';
-         var fontSize='40';
+         var fontSize='24';
          var font='Courier New';
          
           function prepareCanvas(parentDivId){
           	
           	   var canvasDiv = document.getElementById(parentDivId);
           	   canvas = document.createElement('canvas');
-          	   canvasWidth=$j(canvasDiv).width()-20;
+          	     canvasWidth=$j(canvasDiv).width()-20;
                canvasHeight=500;
               
 	           $j(canvas).attr('width', canvasWidth).attr('height', canvasHeight).attr('id', 'canvas');
 	           canvasDiv.appendChild(canvas);
                context = canvas.getContext("2d");
                $j(canvas).css('background-color','#eee');
-              /*  var imageObj = new Image();
+             /*  var imageObj = new Image();
 
         imageObj.onload = function() {
           context.drawImage(imageObj, 69, 50);
         };
         imageObj.src = "imgs/hands.jpg";*/
                $j(canvas).mousedown(function(event) {
-            	   
               	 clickX=event.pageX-this.offsetLeft;
                  clickY=event.pageY-this.offsetTop;
-                 
                 if(selectedTool =='pencil' || selectedTool =='eraser'){
                  $j(this).bind('mousemove', function(event) {
                   	draw(event.pageX-this.offsetLeft,event.pageY-this.offsetTop);
@@ -42,12 +40,12 @@
                  });
                 }else if(selectedTool == 'text'){
                     $j('#textAreaPopUp').css('top',event.pageY+'px').css('left',event.pageX+'px').show();
+                    $j('#writableTextarea').css('font-size',parseInt(fontSize));
+                    $j('#writableTextarea').css('color',selectedColor);
                 }
                  
               });
-               
-               
-               $j('#colorSelector').ColorPicker({
+              $j('#colorSelector').ColorPicker({
 					color: '#ff0000',
 					onShow: function (colpkr) {
 							$j(colpkr).fadeIn(500);
@@ -60,13 +58,12 @@
 					onChange: function (hsb, hex, rgb) {
 							$j('#colorSelector div').css('backgroundColor', '#' + hex);
 							selectedColor='#'+hex;
-							
+							$j('#writableTextarea').css('color',selectedColor);
 					}
 				});
               
                 $j('#saveText').click(function() {
-                    saveTextFromArea(clickX,clickY+parseInt(fontSize));   
-                    
+                    saveTextFromArea(clickX,clickY+parseInt(fontSize));    
                 });
                 
                 $j('#thickness').change(function() {
@@ -74,8 +71,9 @@
                });
                
                 $j('#fontSize').change(function() {
-                     fontSize=$j(this).val();  
-                     $j('#writableTextarea').css('font-size',parseInt(fontSize));
+                     fontSize=$j(this).val();
+                      $j('#writableTextarea').css('font-size',parseInt(fontSize));
+                         
                });
                
                $j(canvas).bind('mouseup mouseleave', function(event) {
@@ -168,8 +166,9 @@
                 //get the value of the textarea 
                 var text = $j('textarea#writableTextarea').val();
                 $j('textarea#writableTextarea').val('');
-                removeTextAreaPopup();
+                removeTextAreaPopup();     
                 context.strokeStyle = "rgba(237,229,0,1)";
+               context.fillStyle = selectedColor;
                context.font=italic+' '+bold+' '+fontSize+'px '+font;
              	context.fillText(text,x,y);
             }        
