@@ -51,5 +51,7 @@
 			
 	</div>-->
 		<div id="drawingfooter">
-			 <input type='button' id='clearcanvas' value="Clear Canvas" />
+		       <form method="post"><input type="hidden" id="encodedImage" name="encodedImage"></form>
+			 <input type='button' id='clearCanvas' value="Clear Canvas" />
+			 <input type='button' id='saveImage' value="Save" />
 		</div>

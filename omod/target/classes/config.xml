@@ -9,7 +9,7 @@
 	<package>org.openmrs.module.drawing</package>
 	<author>pushkar</author>
 	<description>
-		Used to make paint and annotate
+		A browser based editor which can be used paint and annotate
 	</description>
 	<updateURL>https://dev.openmrs.org/modules/download/drawing/update.rdf</updateURL>
 	<require_version>1.8.2</require_version>

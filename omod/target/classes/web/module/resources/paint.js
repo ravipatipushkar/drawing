@@ -107,11 +107,19 @@
                	$j(this).addClass("highlight");
                });
                
-                $j('#clearcanvas').click(function(){
+                $j('#clearCanvas').click(function(){
                 	removeTextAreaPopup();
                	    canvas.width = canvas.width;
                	    removeTextAreaPopup();
                });
+                
+                $j('#saveImage').click(function() {
+                	var dataUrl=canvas.toDataURL();
+                	$j('#encodedImage').val(dataUrl);
+                	$j('form').submit();
+                	
+                });
+         
                
                $j('#boldDiv').toggle(function() {
                    $j(this).addClass("highlight");
