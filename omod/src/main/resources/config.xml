@@ -26,6 +26,11 @@
 		<class>${project.parent.groupId}.${project.parent.artifactId}.extension.html.AdminList</class>
 	</extension>
 	
+	<extension>
+		<point>org.openmrs.patientDashboard.afterLastEncounter</point>
+		<class>${project.parent.groupId}.${project.parent.artifactId}.extension.html.DrawingPatientDashboardExt</class>
+	</extension>
+	
 	<!-- Maps hibernate file's, if present -->
 	<mappingFiles>
 				
