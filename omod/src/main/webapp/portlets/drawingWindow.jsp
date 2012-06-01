@@ -1,4 +1,5 @@
 <%@ include file="/WEB-INF/template/include.jsp"%>
+<openmrs:require privilege="Edit Observations" otherwise="/login.htm"  />
 
 <openmrs:htmlInclude file="/moduleResources/drawing/paint.js"/>
 <openmrs:htmlInclude file="/moduleResources/drawing/paint.css"/>
@@ -9,7 +10,10 @@
          $j(document).ready(function(){
          	prepareCanvas("canvasDiv");
          });  
+         
         </script>
+        		       <openmrs_tag:conceptField formFieldName="concept" formFieldId="conceptId"   />
+        
          <div id="drawingheader">
 			<div id="pencilDiv" class="iconDiv"><img id="pencil" src="<openmrs:contextPath/>/moduleResources/drawing/images/pencil_icon.png" alt="pencil" class="imageprop" /></div>
 			  <div id="eraserDiv" class="iconDiv"><img id="eraser" src="<openmrs:contextPath/>/moduleResources/drawing/images/eraser_icon.png" alt="eraser" class="imageprop" /></div>
@@ -51,7 +55,14 @@
 			
 	</div>-->
 		<div id="drawingfooter">
-		       <form method="post"><input type="hidden" id="encodedImage" name="encodedImage"></form>
+		       <form method="post" id="saveImageForm" action="<openmrs:contextPath/>/module/drawing/saveDrawing.form">
+			   
+		       <input type="hidden" id="encodedImage" name="encodedImage">
+		       <input type="hidden" name="patientId" value='${model.patientId}' />
+		       </form>
 			 <input type='button' id='clearCanvas' value="Clear Canvas" />
 			 <input type='button' id='saveImage' value="Save" />
 		</div>
+		
+				
+		
