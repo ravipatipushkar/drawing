@@ -17,6 +17,7 @@
           	
           	   var canvasDiv = document.getElementById(parentDivId);
           	   canvas = document.createElement('canvas');
+          	   
           	     canvasWidth=$j(canvasDiv).width()-20;
                canvasHeight=500;
               
@@ -116,7 +117,7 @@
                 $j('#saveImage').click(function() {
                 	var dataUrl=canvas.toDataURL();
                 	$j('#encodedImage').val(dataUrl);
-                	$j('form').submit();
+                	$j('#saveImageForm').submit();
                 	
                 });
          
@@ -156,6 +157,7 @@
         	if(selectedTool =='pencil' || selectedTool =='eraser'){
         	        context.strokeStyle = (selectedTool == "eraser")? $j(canvas).css('background-color'):selectedColor;
 		            context.lineJoin = "round";
+		            context.lineCap = "round";
 		            context.lineWidth = thickness;
                   	context.beginPath();
                     context.moveTo(clickX,clickY);                

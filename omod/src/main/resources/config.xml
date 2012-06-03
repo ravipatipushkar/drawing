@@ -27,7 +27,7 @@
 	</extension>
 	
 	<extension>
-		<point>org.openmrs.patientDashboard.afterLastEncounter</point>
+		<point>org.openmrs.patientDashboardTab</point>
 		<class>${project.parent.groupId}.${project.parent.artifactId}.extension.html.DrawingPatientDashboardExt</class>
 	</extension>
 	
