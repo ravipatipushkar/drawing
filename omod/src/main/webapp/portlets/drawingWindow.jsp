@@ -32,8 +32,23 @@
 		          </c:choose>
 		 	  <tr>
 		 			 <td><spring:message code="drawing.questionConcept"/></td>
-		     		 <td><openmrs_tag:conceptField formFieldName="conceptId" formFieldId="drawingConceptId" includeDatatypes="Complex" includeClasses="Drawing"/></td>
-		      </tr>
+				<td>
+		     		<openmrs:globalProperty var="questionConcepts" key="drawing.questionConcepts" listSeparator=","/>
+		     	
+		     		<c:choose>
+		     			<c:when test="${ empty questionConcepts}">
+		     				<openmrs_tag:conceptField formFieldName="conceptId" formFieldId="drawingConceptId" includeDatatypes="Complex" includeClasses="Drawing"/>
+		     	       </c:when>
+		     			<c:otherwise>
+		     				<select id="drawingConceptId" name="conceptId">
+		     					<c:forEach var="conceptId" items="${questionConcepts}">
+		     	     			 <option value="${conceptId}"><openmrs:format conceptId="${conceptId}"/></option>
+                 				</c:forEach>
+                 			</select>
+		     			</c:otherwise>
+		     		</c:choose>
+		     	</td>
+		     		      </tr>
 		     <tr>
 		     	 <td><spring:message code="drawing.date"/></td>
 		      	 <td><input type="text" name="date" size="10" onfocus="showCalendar(this)" id="drawingDate" />(<spring:message code="general.format"/>: <openmrs:datePattern />)</td>

@@ -31,6 +31,11 @@
 		<class>${project.parent.groupId}.${project.parent.artifactId}.extension.html.DrawingPatientDashboardExt</class>
 	</extension>
 	
+	<globalProperty>
+	<property>drawing.questionConcepts</property>
+	<description>The ids of the question concepts for drawing module.Concepts ids should be seperated by comma </description>
+	</globalProperty>
+	
 	<!-- Maps hibernate file's, if present -->
 	<mappingFiles>
 				
