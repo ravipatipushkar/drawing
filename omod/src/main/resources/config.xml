@@ -14,12 +14,14 @@
 	<updateURL>https://dev.openmrs.org/modules/download/${project.parent.artifactId}/update.rdf</updateURL>
 	<require_version>${openMRSVersion}</require_version>
 	<!-- / Module Properties -->
-
-	
+ 
+    
 	<!-- Module Activator -->
 	<activator>${project.parent.groupId}.${project.parent.artifactId}.DrawingActivator</activator>
 	
-	
+    <require_modules>
+	<require_module version="1.9.4">org.openmrs.module.htmlformentry</require_module>
+	</require_modules>
 	<!-- Adds link to admin page -->
 	<extension>
 		<point>org.openmrs.admin.list</point>

@@ -1,7 +1,9 @@
 <%@ include file="/WEB-INF/template/include.jsp"%>
 <openmrs:require privilege="Edit Observations" otherwise="/login.htm"  />
 
+
 <openmrs:htmlInclude file="/moduleResources/drawing/paint.js"/>
+<openmrs:htmlInclude file="/moduleResources/drawing/resize.js"/>
 <openmrs:htmlInclude file="/moduleResources/drawing/paint.css"/>
 <openmrs:htmlInclude file="/moduleResources/drawing/colorpicker.js"/>
 <openmrs:htmlInclude file="/moduleResources/drawing/colorpicker.css"/>
@@ -48,6 +50,10 @@
 		     			</c:otherwise>
 		     		</c:choose>
 		     	</td>
+		     		      </tr>
+		     		      <tr>
+		     		      <td><spring:message code="drawing.encounter"/></td>
+		     		      <td><openmrs_tag:encounterField formFieldName="encounterId" formFieldId="drawingEncounterId" /> </td>
 		     		      </tr>
 		     <tr>
 		     	 <td><spring:message code="drawing.date"/></td>

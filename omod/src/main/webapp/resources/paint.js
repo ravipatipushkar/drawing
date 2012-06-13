@@ -1,4 +1,4 @@
-         var clickX=0;
+      var clickX=0;
          var clickY=0;
          var selectedTool="";
          var context;
@@ -46,6 +46,8 @@
                 }
                  
               });
+               
+               
               $j('#colorSelector').ColorPicker({
 					color: '#ff0000',
 					onShow: function (colpkr) {
@@ -149,7 +151,7 @@
              {
              	$j.each(tools, function() {
 				   $j('#'+this+'Div').removeClass("highlight");
-				   
+
 				 });
              }  
                
@@ -162,8 +164,8 @@
                   	context.beginPath();
                     context.moveTo(clickX,clickY);                
 		            context.lineTo(x,y);
-		            context.closePath();
 		            context.stroke();
+		            context.closePath();
 		            clickX=x;
                     clickY=y;
                }
@@ -181,6 +183,7 @@
                context.fillStyle = selectedColor;
                context.font=italic+' '+bold+' '+fontSize+'px '+font;
              	context.fillText(text,x,y);
-            }        
-                
+            } 
+        
+        
               
