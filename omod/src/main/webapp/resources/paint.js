@@ -1,4 +1,6 @@
-      var clickX=0;
+ function DrawingEditor(randomId){
+         var id=randomId;
+	     var clickX=0;
          var clickY=0;
          var selectedTool="";
          var context;
@@ -13,15 +15,15 @@
          var fontSize='24';
          var font='Courier New';
          
-          function prepareCanvas(parentDivId){
+         this.prepareCanvas = function(){
           	
-          	   var canvasDiv = document.getElementById(parentDivId);
+          	   var canvasDiv = document.getElementById('canvasDiv'+id);
           	   canvas = document.createElement('canvas');
           	   
           	     canvasWidth=$j(canvasDiv).width()-20;
                canvasHeight=500;
               
-	           $j(canvas).attr('width', canvasWidth).attr('height', canvasHeight).attr('id', 'canvas');
+	           $j(canvas).attr('width', canvasWidth).attr('height', canvasHeight).attr('id', 'canvas'+id);
 	           canvasDiv.appendChild(canvas);
                context = canvas.getContext("2d");
                $j(canvas).css('background-color','#eee');
@@ -40,15 +42,15 @@
                   	
                  });
                 }else if(selectedTool == 'text'){
-                    $j('#textAreaPopUp').css('top',event.pageY+'px').css('left',event.pageX+'px').show();
-                    $j('#writableTextarea').css('font-size',parseInt(fontSize));
-                    $j('#writableTextarea').css('color',selectedColor);
+                    $j('#textAreaPopUp'+id).css('top',event.pageY+'px').css('left',event.pageX+'px').show();
+                    $j('#writableTextarea'+id).css('font-size',parseInt(fontSize));
+                    $j('#writableTextarea'+id).css('color',selectedColor);
                 }
                  
               });
                
                
-              $j('#colorSelector').ColorPicker({
+              $j('#colorSelector'+id).ColorPicker({
 					color: '#ff0000',
 					onShow: function (colpkr) {
 							$j(colpkr).fadeIn(500);
@@ -59,23 +61,23 @@
 							return false;
 					},
 					onChange: function (hsb, hex, rgb) {
-							$j('#colorSelector div').css('backgroundColor', '#' + hex);
+							$j('#colorSelector div'+id).css('backgroundColor', '#' + hex);
 							selectedColor='#'+hex;
-							$j('#writableTextarea').css('color',selectedColor);
+							$j('#writableTextarea'+id).css('color',selectedColor);
 					}
 				});
               
-                $j('#saveText').click(function() {
+                $j('#saveText'+id).click(function() {
                     saveTextFromArea(clickX,clickY+parseInt(fontSize));    
                 });
                 
-                $j('#thickness').change(function() {
+                $j('#thickness'+id).change(function() {
                      thickness=$j(this).val();     
                });
                
-                $j('#fontSize').change(function() {
+                $j('#fontSize'+id).change(function() {
                      fontSize=$j(this).val();
-                      $j('#writableTextarea').css('font-size',parseInt(fontSize));
+                      $j('#writableTextarea'+id).css('font-size',parseInt(fontSize));
                          
                });
                
@@ -83,77 +85,118 @@
                  $j(this).unbind('mousemove');
                 });
                
-               $j('#pencilDiv').click(function(){
+               $j('#pencilDiv'+id).click(function(){
                  selectedTool='pencil';
                  removeTextAreaPopup();
                  removehighlight();
-                 $j('#fontpropertiesDiv').hide();
-                 $j('#thicknessDiv').show();
+                 $j('#fontpropertiesDiv'+id).hide();
+                 $j('#thicknessDiv'+id).show();
                  $j(this).addClass("highlight");
                  
                });
                
-               $j('#eraserDiv').click(function(){
+               $j('#imageupload'+id).bind('change', function(e) {
+            	   if (window.File && window.FileReader && window.FileList && window.Blob) {
+            		   var reader = new FileReader();
+     					reader.onload = function(event){
+     							var img = new Image();
+     							img.onload = function(){
+     								drawImage(img);
+     							}
+     							img.src = event.target.result;
+     					}
+     					reader.readAsDataURL(e.target.files[0]); 
+            	   } else {
+            		   alert('your browser doesnot support on the fly fileupload');
+            		 } 
+            	   
+            	 
+					//$(this).html($(this).html());   
+					//alert('working'); 
+               	});
+               
+               $j('#eraserDiv'+id).click(function(){
                	selectedTool='eraser';
                	removeTextAreaPopup();
                	removehighlight();
-               	$j('#fontpropertiesDiv').hide();
-               	$j('#thicknessDiv').show();
+               	$j('#fontpropertiesDiv'+id).hide();
+               	$j('#thicknessDiv'+id).show();
                	$j(this).addClass("highlight");
                });
                
-               $j('#textDiv').click(function(){
+               $j('#textDiv'+id).click(function(){
                	selectedTool='text';
                	removehighlight();
-               	$j('#thicknessDiv').hide();
-               	$j('#fontpropertiesDiv').show();
+               	$j('#thicknessDiv'+id).hide();
+               	$j('#fontpropertiesDiv'+id).show();
                	$j(this).addClass("highlight");
                });
                
-                $j('#clearCanvas').click(function(){
+                $j('#clearCanvas'+id).click(function(){
                 	removeTextAreaPopup();
                	    canvas.width = canvas.width;
                	    removeTextAreaPopup();
+                	$j('#encodedImage'+id).val('');
+
                });
                 
-                $j('#saveImage').click(function() {
+                $j('#saveImage'+id).click(function() {
                 	var dataUrl=canvas.toDataURL();
-                	$j('#encodedImage').val(dataUrl);
-                	$j('#saveImageForm').submit();
+                	$j('#encodedImage'+id).val(dataUrl);
+                	$j('#saveImageForm'+id).submit();
                 	
                 });
          
                
-               $j('#boldDiv').toggle(function() {
+               $j('#boldDiv'+id).toggle(function() {
                    $j(this).addClass("highlight");
                    bold='bolder';
-                   $j('#writableTextarea').css('font-weight',bold);
+                   $j('#writableTextarea'+id).css('font-weight',bold);
                },
                function() {
                	 $j(this).removeClass("highlight");
                    bold='';
-                   $j('#writableTextarea').css('font-weight',bold);
+                   $j('#writableTextarea'+id).css('font-weight',bold);
                });
                
-               $j('#italicDiv').toggle(function() {
+               $j('#italicDiv'+id).toggle(function() {
                    $j(this).addClass("highlight");
                    italic='italic';
-                  $j('#writableTextarea').css('font-style',italic);
+                  $j('#writableTextarea'+id).css('font-style',italic);
                },
                function() {
                	 $j(this).removeClass("highlight");
                    italic='';
-                 $j('#writableTextarea').css('font-style',italic);
+                 $j('#writableTextarea'+id).css('font-style',italic);
                });
-          }
+          };
+          
+          this.loadExistingImage= function(dataUrl){
+        	  var imageObj = new Image();
+                  imageObj.onload = function() {
+            	  drawImage(imageObj)
+              };
+                imageObj.src = dataUrl;
+          };
+              
+              function drawImage(imageObj){
+            	  if(canvas.height<imageObj.height){
+            		  if(confirm("the size of image is greater than the size of canvas.this clears the canvas do you wish to continue")){
+   					    canvas.height = imageObj.height;
+   	                  context.drawImage(imageObj,(canvas.width/2)-(imageObj.width/2),(canvas.height/2)-(imageObj.height/2));
+                      }
+            	  }else{
+            		  context.drawImage(imageObj,(canvas.width/2)-(imageObj.width/2),(canvas.height/2)-(imageObj.height/2));
+            	  }
+            }
                
              function removehighlight()
              {
              	$j.each(tools, function() {
-				   $j('#'+this+'Div').removeClass("highlight");
+				   $j('#'+this+'Div'+id).removeClass("highlight");
 
 				 });
-             }  
+             };  
                
             function draw(x,y){
         	if(selectedTool =='pencil' || selectedTool =='eraser'){
@@ -169,21 +212,21 @@
 		            clickX=x;
                     clickY=y;
                }
-           } 
+           }; 
         function removeTextAreaPopup()
         {
-        	$j('#textAreaPopUp').hide();
-        }
+        	$j('#textAreaPopUp'+id).hide();
+        };
         function saveTextFromArea(x,y){
                 //get the value of the textarea 
-                var text = $j('textarea#writableTextarea').val();
-                $j('textarea#writableTextarea').val('');
+                var text = $j('textarea#writableTextarea'+id).val();
+                $j('textarea#writableTextarea'+id).val('');
                 removeTextAreaPopup();     
                 context.strokeStyle = "rgba(237,229,0,1)";
                context.fillStyle = selectedColor;
                context.font=italic+' '+bold+' '+fontSize+'px '+font;
              	context.fillText(text,x,y);
-            } 
+            }; 
         
         
-              
+ }             

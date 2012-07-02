@@ -24,47 +24,40 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
-public class DrawingWindowController  {
+public class DrawingWindowController {
 	
-	@RequestMapping(value="/module/drawing/saveDrawing",method = RequestMethod.POST)
-	public String saveDrawing(@RequestParam(value="encodedImage",required = true)String encodedImage,@RequestParam(value="patientId",required = true)Patient patient,@RequestParam(value="conceptId",required = true)Concept concept,@RequestParam(value="encounterId",required = false)Encounter encounter,@RequestParam(value="date",required = true)String dateString,HttpServletRequest request){
-		byte [] raw=Base64.decodeBase64(encodedImage.split(",")[1]);
-		ByteArrayInputStream bs=new ByteArrayInputStream(raw);
+	@RequestMapping(value = "/module/drawing/saveDrawing", method = RequestMethod.POST)
+	public String saveDrawing(@RequestParam(value = "encodedImage", required = true) String encodedImage,
+	                          @RequestParam(value = "patientId", required = true) Patient patient,
+	                          @RequestParam(value = "conceptId", required = true) Concept concept,
+	                          @RequestParam(value = "encounterId", required = false) Encounter encounter,
+	                          @RequestParam(value = "date", required = true) String dateString, HttpServletRequest request) {
+		byte[] raw = Base64.decodeBase64(encodedImage.split(",")[1]);
+		ByteArrayInputStream bs = new ByteArrayInputStream(raw);
 		Date date;
-		try{
-			if(StringUtils.isBlank(dateString))
-				date=new Date();
+		try {
+			if (StringUtils.isBlank(dateString))
+				date = new Date();
 			else
-			{
-			    date=Context.getDateFormat().parse(dateString);
-			}
-			
-		    Obs o=new Obs(patient, concept, date, null);
-		    o.setEncounter(encounter);
-		    ComplexData cd=new ComplexData("drawing.png", bs);
-		    o.setComplexData(cd);
-		    Errors obsErrors = new BindException(o, "obs");
+				date = Context.getDateFormat().parse(dateString);
+			Obs o = new Obs(patient, concept, date, null);
+			o.setEncounter(encounter);
+			ComplexData cd = new ComplexData("drawing.png", bs);
+			o.setComplexData(cd);
+			Errors obsErrors = new BindException(o, "obs");
 			ValidationUtils.invokeValidator(new ObsValidator(), o, obsErrors);
 			if (!obsErrors.hasErrors()) {
-				//bind the errors to the model object
-				 Context.getObsService().saveObs(o, "saving obs");
-				 request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ATTR, "drawing.saved");
-			}
-			else
+				Context.getObsService().saveObs(o, "saving obs");
+				request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ATTR, "drawing.saved");
+			} else
 				request.getSession().setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "drawing.save.error");
-
-		   
-		    
-		   
+			
 		}
-		catch(Exception e)
-		{
+		catch (Exception e) {
 			request.getSession().setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "drawing.save.error");
 		}
 		
-		return "redirect:/patientDashboard.form?patientId="+patient.getPatientId();
+		return "redirect:/patientDashboard.form?patientId=" + patient.getPatientId();
 	}
 	
 }
-
-

@@ -3,4 +3,6 @@
 
 <openmrs:portlet url="drawingWindow.portlet" id="drawingWindow" moduleId="drawing" />
 
+
+
 <%@ include file="/WEB-INF/template/footerMinimal.jsp" %>

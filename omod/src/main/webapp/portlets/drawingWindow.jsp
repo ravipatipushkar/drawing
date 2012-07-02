@@ -12,7 +12,8 @@
  
          <script type="text/javascript">
          $j(document).ready(function(){
-         	prepareCanvas("canvasDiv");
+        	 var v=new DrawingEditor('');
+          	v.prepareCanvas();
          });  
          
         </script>
@@ -87,13 +88,13 @@
       		 	<option>8</option>
       		 </select>
       		 </div>
-      		  <div id="colorSelector" style="float: left">
-      		    <div></div> 	
+      		  <div id="colorSelector"  style="float: left" class="colorselector">
+      		    <div class="colorselector_innerdiv"></div> 	
       		 </div>
               <div style="clear:both;"></div>
       		
 		</div>
-		<div id="canvasDiv">
+		<div id="canvasDiv" class="canvasdiv">
 			
 		</div>
 		<div id='textAreaPopUp' style='position:absolute;display:none;z-index:1;'>
@@ -107,6 +108,8 @@
 		  
 			 <input type='button' id='clearCanvas' value="Clear Canvas" />
 					     <input type='button' id='saveImage' value="Save" />
+					     			 <input type="file" id="imageupload" value="Open Image" /> 
+					     
 			
 		</div>
 		

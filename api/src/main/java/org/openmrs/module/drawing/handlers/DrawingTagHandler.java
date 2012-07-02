@@ -9,9 +9,8 @@ import org.openmrs.module.htmlformentry.FormEntrySession;
 import org.openmrs.module.htmlformentry.FormSubmissionController;
 import org.openmrs.module.htmlformentry.handler.SubstitutionTagHandler;
 
-public class DrawingHandler extends SubstitutionTagHandler {
+public class DrawingTagHandler extends SubstitutionTagHandler {
 
-	
 
 	@Override
 	protected String getSubstitution(FormEntrySession session,
