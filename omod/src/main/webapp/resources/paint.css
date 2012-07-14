@@ -51,4 +51,51 @@
  .imageprop{
  	height:20px;
  	width: 20px;
+ 	cursor: pointer;
  }
+ 
+ .calloutDown
+    {
+        height: 0;
+        width: 0;
+        border-top: 12px solid #F1CA7E;
+        border-left: 12px dotted transparent;
+        border-right: 12px dotted transparent;
+        left: 0px;
+        top: 0px;
+        margin-left: 20px;
+        z-index: 11;
+    }
+    .calloutDown2
+    {
+        position: relative;
+        left: -10px;
+        top: -12px;
+        height: 0;
+        width: 0;
+        border-top: 10px solid #FFFFFF;
+        border-left: 10px dotted transparent;
+        border-right: 10px dotted transparent;
+        z-index: 10;
+    }
+    
+ .divContainerDown
+{
+  background-color: #FFFFFF;
+  border: solid 1px #F1CA7E;
+  position: relative;
+  top: 1px;
+  z-index: 5;
+  width: 200px;
+  padding: 4px;
+ }
+.link {
+    text-decoration: none;
+	color: #0000FF;
+	cursor: pointer;
+}
+
+.divContainerDown a:hover{
+    text-decoration:underline;
+	
+}

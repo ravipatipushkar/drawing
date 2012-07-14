@@ -14,6 +14,11 @@
          var italic='';
          var fontSize='24';
          var font='Courier New';
+         var ancount=0;
+         var blueDot="/openmrstru/moduleResources/drawing/blue-dot.png";
+         var redDot="/openmrstru/moduleResources/drawing/images/red-dot.png";
+         var close="/openmrstru/moduleResources/drawing/close.gif";
+         var annotationsCollection={};
          
          this.prepareCanvas = function(){
           	
@@ -169,6 +174,30 @@
                    italic='';
                  $j('#writableTextarea'+id).css('font-style',italic);
                });
+               $j('#canvasDiv'+id).dblclick(function(event) {
+            	   clickX=event.pageX-this.offsetLeft;
+                   clickY=event.pageY-27;
+                   var v=$j(this).parent();
+            
+                   var anid="marker"+ancount;
+                   ancount++;
+                   divx=clickX-23;
+             	   divy=clickY-87;
+                   var v='<div class="container"><div style="top:'+divy+'px;left:'+divx+'px;position:absolute;z-index:5;"><div id="'+anid+'_data" class="divContainerDown"><textarea style="width:98%;resize: none;"></textarea><span><a class="link save" > Save </a><a class="link" onClick="$j(\'#'+anid+'_data\').parent().parent().remove()"> Cancel </a></span></div><div class="calloutDown"><div class="calloutDown2"></div></div></div>';
+                   $j(this).append(v+'<img id="'+anid+'" src="'+redDot+'" style="top:'+clickY+'px;left:'+clickX+'px;position:absolute;z-index:4"/></div>');
+                    
+                   $j('#'+anid).click(function(event) {
+                   	   $j('#'+anid+'_data').parent().css('top', event.pageY-$j('#'+anid+'_data').parent().height());
+                      $j('#'+anid+'_data').parent().show();
+                   });
+                   
+                   var p="#"+anid+"_data span .save" ;
+                   $j(p+'').click({  ele : $j(p+'').parent().parent()},function(e){
+                   	saveAnnotation(e.data.ele);
+                   });
+             });
+               
+               
           };
           
           this.loadExistingImage= function(dataUrl){
@@ -178,6 +207,55 @@
               };
                 imageObj.src = dataUrl;
           };
+          
+          function saveAnnotation(v)
+          {
+	
+                var s=$j(v).children('textarea').val();
+                var changedHtml="<img src='"+close+"' style='float:right' onClick='$j(this).parent().parent().hide()'/><span style='background-color:white'>"+s+"</span></br><span><a class='link'> Move </a> <a  class='edit link'> Edit </a> <a class='link delete'> Delete </a></span>";
+ 				$j(v).html(changedHtml);    	
+ 			    setHandlers(v);
+				annotationsCollection[$j(v).attr('id')]={data:s,position:$j(v).parent().parent().children('img').position()};
+				$j(v).parent().hide();     
+          }
+          
+          function editOnClick(v){
+	
+				var k=$j(v).children('span:first').text();
+				$j(v).data('value',k);
+				$j(v).html('<textarea style="width:98%;resize: none;">'+k+'</textarea><span><a class="link save" > Save </a><a class="link resetAfterCancel" > Cancel </a></span>');
+	            $j(v).children('span:last').children('.save').click({ele:v},function(event) {
+					saveAnnotation(event.data.ele);
+		    });
+		    $j(v).children('span:last').children('.resetAfterCancel').click({ele:v},function(event) {
+					resetAfterCancel(event.data.ele);
+		    });
+	          
+	          }
+	         
+	         
+			 function resetAfterCancel(k){
+	              var s=$j(k).data('value');
+              var changedHtml="<img src='"+close+"' style='float:right' onClick='$j(this).parent().parent().hide()'/><span style='background-color:white'>"+s+"</span></br><span><a class='link'> Move </a> <a  class='edit link'> Edit </a> <a class='link delete'> Delete </a></span>";
+              $j(k).html(changedHtml);
+              setHandlers(k);
+          }
+          
+          function setHandlers(v){
+          	$j(v).children('span:last').children('.edit').click({ele:v},function(event) {
+					editOnClick(event.data.ele);
+				});	
+				$j(v).children('span:last').children('.delete').click({ele:v},function(event) {
+					deleteAnnotation(event.data.ele);
+				});
+          }
+
+
+
+         function deleteAnnotation(v){
+	         delete annotationsCollection[$j(v).attr('id')];
+	         $j(v).parent().parent().remove();
+         }
               
               function drawImage(imageObj){
             	  if(canvas.height<imageObj.height){
