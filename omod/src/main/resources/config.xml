@@ -22,6 +22,8 @@
     <require_modules>
 	<require_module version="1.9.4">org.openmrs.module.htmlformentry</require_module>
 	</require_modules>
+	
+	
 	<!-- Adds link to admin page -->
 	<extension>
 		<point>org.openmrs.admin.list</point>

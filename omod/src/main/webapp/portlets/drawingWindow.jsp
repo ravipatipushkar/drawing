@@ -14,13 +14,28 @@
          $j(document).ready(function(){
         	 var v=new DrawingEditor('');
           	v.prepareCanvas();
+          	
+          	<c:if test="${not empty obsId}">
+          	<c:if test="${not empty encodedImage}">
+          	   v.loadExistingImage('${encodedImage}');
+          	</c:if>
+          	
+          	
+          	 <c:forEach items="${annotations}" var="annotation">
+             v.createMarker(${annotation.id},${annotation.location.x},${annotation.location.y},'${annotation.text}','${annotation.status}');
+		     </c:forEach>
+		     </c:if>
+        
          });  
-         
+  
         </script>
-      
-				<div id="drawingObsform" >
+     
+          
+		<c:choose>
+			<c:when test="${obsId == null}" >
+		<div id="drawingObsform" >
 		 <form method="post" id="saveImageForm" action="<openmrs:contextPath/>/module/drawing/saveDrawing.form">
-		 
+		
 			 <table>
 				 <c:choose>
 					 <c:when test="${model.patientId == null}">
@@ -51,7 +66,7 @@
 		     			</c:otherwise>
 		     		</c:choose>
 		     	</td>
-		     		      </tr>
+		     </tr>
 		     		      <tr>
 		     		      <td><spring:message code="drawing.encounter"/></td>
 		     		      <td><openmrs_tag:encounterField formFieldName="encounterId" formFieldId="drawingEncounterId" /> </td>
@@ -60,10 +75,22 @@
 		     	 <td><spring:message code="drawing.date"/></td>
 		      	 <td><input type="text" name="date" size="10" onfocus="showCalendar(this)" id="drawingDate" />(<spring:message code="general.format"/>: <openmrs:datePattern />)</td>
 			</tr>
+			
 		</table>
 		    <input type="hidden" id="encodedImage" name="encodedImage"/>
 		</form>
-	</div>
+		</div>
+		</c:when>
+		<c:otherwise>
+		<form method="post" id="saveImageForm" action="<openmrs:contextPath/>/module/drawing/updateDrawing.form">
+		   <input type="hidden" id="encodedImage" name="encodedImage"/>
+		   <input type="hidden" id="obsId" name="obsId" value="${obsId} "/>
+		   </form>
+		</c:otherwise>
+		</c:choose>
+	
+		
+	
          <div id="drawingheader">
 			<div id="pencilDiv" class="iconDiv"><img id="pencil" src="<openmrs:contextPath/>/moduleResources/drawing/images/pencil_icon.png" alt="pencil" class="imageprop" /></div>
 			  <div id="eraserDiv" class="iconDiv"><img id="eraser" src="<openmrs:contextPath/>/moduleResources/drawing/images/eraser_icon.png" alt="eraser" class="imageprop" /></div>
@@ -106,10 +133,9 @@
 	</div>-->
 		<div id="drawingfooter">
 		  
-			 <input type='button' id='clearCanvas' value="Clear Canvas" />
-					     <input type='button' id='saveImage' value="Save" />
-					     			 <input type="file" id="imageupload" value="Open Image" /> 
+			  <input type='button' id='clearCanvas' value="Clear Canvas" />
+		      <input type='button' id='saveImage' value="Save" />
+		      <input type="file" id="imageupload" value="Open Image" /> 
 					     
-			
 		</div>
 		

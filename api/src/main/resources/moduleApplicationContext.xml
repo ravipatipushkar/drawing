@@ -19,5 +19,16 @@
 
 	<!-- Add here beans related to the API context -->
 
+
+    <bean parent="obsServiceTarget" >
+        <property name="handlers">
+            <map>
+                <entry>
+                    <key><value>DrawingHandler</value></key>
+                    <bean class="org.openmrs.module.drawing.obs.handler.DrawingHandler"/>
+                </entry>
+            </map>
+        </property>
+    </bean>
 	
 </beans>

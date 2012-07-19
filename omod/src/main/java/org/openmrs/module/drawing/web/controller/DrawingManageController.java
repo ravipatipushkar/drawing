@@ -13,33 +13,68 @@
  */
 package org.openmrs.module.drawing.web.controller;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.Obs;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.drawing.AnnotatedImage;
+import org.openmrs.web.WebConstants;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * The main controller.
  */
 @Controller
-public class  DrawingManageController {
-    
+public class DrawingManageController {
+	
 	protected final Log log = LogFactory.getLog(getClass());
 	
 	@RequestMapping(value = "/module/drawing/manage", method = RequestMethod.GET)
-	public void manage(ModelMap model) {
+	public void manage(ModelMap model, HttpServletRequest request) {
 		
-		
+		if (StringUtils.isNotBlank(request.getParameter("obsId"))) {
+			int obsId = Integer.parseInt(request.getParameter("obsId"));
+			Obs obs = Context.getObsService().getComplexObs(obsId, "");
+			if (obs == null || !obs.getConcept().isComplex()) {
+				log.error("obs is not complex ");
+			} else {
+				AnnotatedImage ai = (AnnotatedImage) obs.getComplexData().getData();
+				//String encodedImage = "/" + WebConstants.WEBAPP_NAME + "/complexObsServlet?obsId=" + obs.getId();
+				
+				String encodedImage=encodeComplexData(ai.getImage());
+				model.addAttribute("encodedImage", encodedImage);
+				model.addAttribute("annotations", ai.getAnnotations());
+				model.addAttribute("obsId", obs.getId());
+			}
+		}
 		model.addAttribute("user", Context.getAuthenticatedUser());
+		
 	}
 	
-	
+	public String encodeComplexData(Object o) {
+		String encodedImage = null;
+		try {
+			BufferedImage img = (BufferedImage) o;
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ImageIO.write(img, "png", baos);
+			encodedImage = "data:image/png;base64," + Base64.encodeBase64String(baos.toByteArray());
+		}
+		catch (Exception e) {
+			log.error("cannot write image", e);
+			
+		}
+		return encodedImage;
+	}
 	
 }
