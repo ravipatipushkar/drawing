@@ -10,39 +10,49 @@ function DrawingEditor(randomId) {
     var canvasWidth;
     var canvasHeight;
     var bold = '';
-    var tools = ['pencil', 'eraser', 'text'];
+    var tools = ['pencil', 'eraser', 'text', 'cursor'];
     var italic = '';
     var fontSize = '24';
     var font = 'Courier New';
     var ancount = 0;
-    var blueDot = "/openmrstru/moduleResources/drawing/blue-dot.png";
-    var redDot = "/openmrstru/moduleResources/drawing/images/red-dot.png";
-    var close = "/openmrstru/moduleResources/drawing/close.gif";
+    var blueDot = openmrsContextPath + "/moduleResources/drawing/blue-dot.png";
+    var redDot = openmrsContextPath + "/moduleResources/drawing/images/red-dot.png";
+    var close = openmrsContextPath + "/moduleResources/drawing/close.gif";
     var annotationsCollection = {};
-    var formId='saveImageForm' + id;
-    var submit=true;
-    
-    
-    
-    this.getSubmit=function(){
-    	if(submit)
-    	    return true;
-    	else
-    		return false;
-    }
-    
-    this.setSubmit=function(v){
-    	 submit =v;
+    var formId = 'saveImageForm' + id;
+    var submit = true;
+    var currentLoadedImage = null;
+    var currentLoadedImageCoordinates = {
+        x: 0,
+        y: 0
     };
-    
-    this.getFormId=function(){
-    	return formId;
-    }
-    
-    this.setFormId=function(v){
-    	formId =v;
+    var imageMoveCoordinates = {
+        x: null,
+        y: null
     };
-    
+    var clicked = {};
+    var imageCanBeMoved = false;
+
+
+
+
+    this.getSubmit = function() {
+        if (submit) return true;
+        else return false;
+    }
+
+    this.setSubmit = function(v) {
+        submit = v;
+    };
+
+    this.getFormId = function() {
+        return formId;
+    }
+
+    this.setFormId = function(v) {
+        formId = v;
+    };
+
     this.getAllAnnotations = function() {
         return annotationsCollection;
     }
@@ -53,16 +63,36 @@ function DrawingEditor(randomId) {
         canvas = document.createElement('canvas');
         canvasWidth = $j(canvasDiv).width() - 20;
         canvasHeight = 500;
-            
+
         $j(canvas).attr('width', canvasWidth).attr('height', canvasHeight).attr('id', 'canvas' + id);
         canvasDiv.appendChild(canvas);
         context = canvas.getContext("2d");
         $j('#encodedImage' + id).val(canvas.toDataURL());
-        $j(canvas).css('background-color', '#eee');
         $j(canvas).mousedown(function(event) {
             clickX = event.pageX - this.offsetLeft;
             clickY = event.pageY - this.offsetTop;
-            if (selectedTool == 'pencil' || selectedTool == 'eraser') {
+            if (selectedTool == "cursor") {
+                clicked = {
+                    x: clickX,
+                    y: clickY
+                };
+                console.log(clickX.between(currentLoadedImageCoordinates.x, currentLoadedImage.width + currentLoadedImageCoordinates.x) && clickY.between(currentLoadedImageCoordinates.y, currentLoadedImage.height + currentLoadedImageCoordinates.y));
+
+                if (currentLoadedImage != null && clickX.between(currentLoadedImageCoordinates.x, currentLoadedImage.width + currentLoadedImageCoordinates.x) && clickY.between(currentLoadedImageCoordinates.y, currentLoadedImage.height + currentLoadedImageCoordinates.y)) {
+                    $j(this).css('cursor', 'move');
+                    $j(this).bind('mousemove', function(event) {
+                        //document.onselectstart = function(){ return false; }
+                        imageCanBeMoved = true;
+                        clearCanvas();
+                        //(currentLoadedImage, event.pageX - this.offsetLeft, event.pageY - this.offsetTop);
+                        imageMoveCoordinates.x = event.pageX - this.offsetLeft - clicked.x;
+                        imageMoveCoordinates.y = event.pageY - this.offsetTop - clicked.y;
+                        console.log(imageMoveCoordinates.x + "      " + imageMoveCoordinates.y);
+                        drawImage(currentLoadedImage, currentLoadedImageCoordinates.x + imageMoveCoordinates.x, currentLoadedImageCoordinates.y + imageMoveCoordinates.y);
+                        //currentLoadedImageCoordinates={x:currentLoadedImageCoordinates.x + localx,y:currentLoadedImageCoordinates.y + localy};
+                    });
+                }
+            } else if (selectedTool == 'pencil' || selectedTool == 'eraser') {
                 $j(this).bind('mousemove', function(event) {
                     draw(event.pageX - this.offsetLeft, event.pageY - this.offsetTop);
 
@@ -107,6 +137,14 @@ function DrawingEditor(randomId) {
 
         $j(canvas).bind('mouseup mouseleave', function(event) {
             $j(this).unbind('mousemove');
+            if (selectedTool == "cursor") {
+                if (currentLoadedImage != null && imageCanBeMoved) {
+                    currentLoadedImageCoordinates.x = currentLoadedImageCoordinates.x + imageMoveCoordinates.x;
+                    currentLoadedImageCoordinates.y = currentLoadedImageCoordinates.y + imageMoveCoordinates.y;
+                    imageCanBeMoved = false;
+                    $j(this).css('cursor', 'default');
+                }
+            }
         });
 
         $j('#pencilDiv' + id).click(function() {
@@ -119,13 +157,14 @@ function DrawingEditor(randomId) {
 
         });
 
-        $j('#imageupload' + id).bind('change', function(e) {
+        $j('#imageUpload' + id).bind('change', function(e) {
             if (window.File && window.FileReader && window.FileList && window.Blob) {
                 var reader = new FileReader();
                 reader.onload = function(event) {
                     var img = new Image();
                     img.onload = function() {
-                        drawImage(img);
+                        currentLoadedImage = this;
+                        drawImage(img, 0, 0);
                     }
                     img.src = event.target.result;
                 }
@@ -152,31 +191,42 @@ function DrawingEditor(randomId) {
             $j(this).addClass("highlight");
         });
 
-        $j('#clearCanvas' + id).click(function() {
+        $j('#cursorDiv' + id).click(function() {
+            selectedTool = 'cursor';
             removeTextAreaPopup();
-            canvas.width = canvas.width;
-            removeTextAreaPopup();
-            $j('#encodedImage' + id).val('');
-
+            removehighlight();
+            $j('#fontpropertiesDiv' + id).hide();
+            $j('#thicknessDiv' + id).show();
+            $j(this).addClass("highlight");
         });
 
-         $j('#saveImage' + id).click(function() {
+        $j('#clearCanvas' + id).click(function() {
+            currentLoadedImage = null;
+            currentLoadedImageCoordinates = {
+                x: 0,
+                y: 0
+            };
+            clearCanvas();
+        });
+
+        $j('#saveImage' + id).click(function() {
             var dataUrl = canvas.toDataURL();
             $j('#encodedImage' + id).val(dataUrl);
             var count = 0;
+            $j(':hidden').remove('.annotationhiddenFields'+id);
             $j.each(annotationsCollection, function(index, value) {
-                $j('#'+formId).append('<input type="hidden" name="annotation' + id + '' + count + '" value="' + value.id + '|' + Math.round(value.position.left) + '|' + Math.round(value.position.top) + '|' + value.data + '|' + value.status + '" >');
+                $j('#' + formId).append('<input type="hidden" class="annotationhiddenFields'+id+'" name="annotation' + id + '' + count + '" value="' + value.id + '|' + Math.round(value.position.left) + '|' + Math.round(value.position.top) + '|' + value.data + '|' + value.status + '" >');
                 count++;
             });
-			
-            if( $j('#annotationCounter'+id).val() == null)
-            $j('#'+formId).append('<input type="hidden"  id="annotationCounter'+ id +'" name="annotationCounter' + id + '" value="' + count + '"/>');
-            else{
-            	$j('#annotationCounter'+id).val(count);
-            }
-             
-            if(submit)
-            $j('#'+formId).submit();
+
+            if ($j('#annotationCounter' + id).val() == null) 
+            	$j('#' + formId).append('<input type="hidden"  id="annotationCounter' + id + '" name="annotationCounter' + id + '" value="' + count + '"/>');
+            else 
+                $j('#annotationCounter' + id).val(count);
+            
+            $j('#saveNotification'+id).fadeIn(500).delay(2000).fadeOut(500);
+            if (submit) 
+            	$j('#' + formId).submit();
 
         });
 
@@ -211,8 +261,6 @@ function DrawingEditor(randomId) {
             var v = '<div class="container"><div style="top:' + divy + 'px;left:' + divx + 'px;position:absolute;z-index:5;"><div id="' + annotationId + '_data" class="divContainerDown"><textarea style="width:98%;resize: none;"></textarea><span><a class="link save" > Save </a><a class="link" onClick="$j(\'#' + annotationId + '_data\').parent().parent().remove()"> Cancel </a></span></div><div class="calloutDown"><div class="calloutDown2"></div></div></div>';
             $j(this).append(v + '<img id="' + annotationId + '" src="' + redDot + '" style="top:' + clickY + 'px;left:' + clickX + 'px;position:absolute;z-index:4"/></div>');
 
-            //  $j('#'+annotationId+'_data').parent().css('top', clickY-$j('#'+annotationId+'_data').parent().height());
-            //  $j('#'+annotationId+'_data').parent().css('left', clickX+23-$j('#'+annotationId+'_data').parent().width()/8-5);
             $j('#' + annotationId).click(function(event) {
                 $j('#' + annotationId + '_data').parent().css('top', event.pageY - $j('#' + annotationId + '_data').parent().height());
                 $j('#' + annotationId + '_data').parent().css('left', event.pageX - $j('#' + annotationId + '_data').parent().width() / 8 - 5);
@@ -221,18 +269,22 @@ function DrawingEditor(randomId) {
             });
 
             var p = "#" + annotationId + "_data span .save";
-            $j(p + '').click({
-                ele: $j(p + '').parent().parent()
-            }, function(e) {
-                saveAnnotation(e.data.ele);
+            $j(p + '').click(function() {
+                saveAnnotation($j(this).parent().parent());
             });
         });
+
+        Number.prototype.between = function(first, last) {
+            return (first < last ? this >= first && this <= last : this >= last && this <= first);
+
+        }
+
 
 
     };
 
     this.createMarker = function(identification, x, y, text, stat) {
-        var annotationId = "marker"+ id + ancount;
+        var annotationId = "marker" + id + ancount;
         ancount++;
         y = y + $j('#canvasDiv' + id).offset().top;
         x = x + $j('#canvasDiv' + id).offset().left;
@@ -260,16 +312,16 @@ function DrawingEditor(randomId) {
     this.loadExistingImage = function(dataUrl) {
         var imageObj = new Image();
         imageObj.onload = function() {
-            drawImage(imageObj);
+            drawImage(imageObj, 0, 0);
             var dataUrl = canvas.toDataURL();
             $j('#encodedImage' + id).val(dataUrl);
-            
+
         };
         imageObj.src = dataUrl;
     };
 
     function saveAnnotation(v) {
-    	$j(v).parent().fadeOut(500);
+        $j(v).parent().fadeOut(500);
         var s = $j(v).children('textarea').val();
         var changedHtml = "<img src='" + close + "' style='float:right' onClick='$j(this).parent().parent().fadeOut(500)'/><span style='background-color:white'>" + s + "</span></br><span><a class='link move'> Move </a> <a  class='edit link'> Edit </a> <a class='link delete'> Delete </a></span>";
         $j(v).html(changedHtml);
@@ -285,7 +337,7 @@ function DrawingEditor(randomId) {
             annotationsCollection[$j(v).attr('id')].position = getrelativePosition($j(v).parent().parent().children('img').position());
             annotationsCollection[$j(v).attr('id')].status = 'CHANGED';
         }
-        
+
     }
 
     function getrelativePosition(obj) {
@@ -300,15 +352,11 @@ function DrawingEditor(randomId) {
         var k = $j(v).children('span:first').text();
         $j(v).data('value', k);
         $j(v).html('<textarea style="width:98%;resize: none;">' + k + '</textarea><span><a class="link save" > Save </a><a class="link resetAfterCancel" > Cancel </a></span>');
-        $j(v).children('span:last').children('.save').click({
-            ele: v
-        }, function(event) {
-            saveAnnotation(event.data.ele);
+        $j(v).children('span:last').children('.save').click(function() {
+            saveAnnotation($j(this).parent().parent());
         });
-        $j(v).children('span:last').children('.resetAfterCancel').click({
-            ele: v
-        }, function(event) {
-            resetAfterCancel(event.data.ele);
+        $j(v).children('span:last').children('.resetAfterCancel').click(function() {
+            resetAfterCancel($j(this).parent().parent());
         });
 
     }
@@ -326,42 +374,34 @@ function DrawingEditor(randomId) {
     }
 
     function setHandlers(v) {
-        $j(v).children('span:last').children('.edit').click({
-            ele: v
-        }, function(event) {
-            editOnClick(event.data.ele);
+        $j(v).children('span:last').children('.edit').click(function() {
+            editOnClick($j(this).parent().parent());
         });
-        $j(v).children('span:last').children('.delete').click({
-            ele: v
-        }, function(event) {
-            deleteAnnotation(event.data.ele);
+        $j(v).children('span:last').children('.delete').click(function() {
+            deleteAnnotation($j(this).parent().parent());
         });
-        $j(v).children('span:last').children('.move').click({
-            ele: v
-        }, function(event) {
-            moveOnClick(event.data.ele);
+        $j(v).children('span:last').children('.move').click(function() {
+            moveOnClick($j(this).parent().parent());
         });
     }
 
 
 
     function deleteAnnotation(v) {
-        if (annotationsCollection[$j(v).attr('id')].id == -1)
-        	delete annotationsCollection[$j(v).attr('id')];
-        else 
-        	annotationsCollection[$j(v).attr('id')].status = 'DELETE';
+        if (annotationsCollection[$j(v).attr('id')].id == -1) delete annotationsCollection[$j(v).attr('id')];
+        else annotationsCollection[$j(v).attr('id')].status = 'DELETE';
         $j(v).parent().parent().remove();
     }
 
-    function drawImage(imageObj) {
+    function drawImage(imageObj, x, y) {
         if (canvas.height < imageObj.height) {
             if (confirm("the size of image is greater than the size of canvas.this clears the canvas do you wish to continue")) {
                 canvas.height = imageObj.height;
                 //context.drawImage(imageObj,(canvas.width/2)-(imageObj.width/2),(canvas.height/2)-(imageObj.height/2));
-                context.drawImage(imageObj, 0, 0);
+                context.drawImage(imageObj, x, y);
             }
         } else {
-            context.drawImage(imageObj, 0, 0);
+            context.drawImage(imageObj, x, y);
             //context.drawImage(imageObj,(canvas.width/2)-(imageObj.width/2),(canvas.height/2)-(imageObj.height/2));
         }
     }
@@ -375,7 +415,7 @@ function DrawingEditor(randomId) {
 
     function draw(x, y) {
         if (selectedTool == 'pencil' || selectedTool == 'eraser') {
-            context.strokeStyle = (selectedTool == "eraser") ? $j(canvas).css('background-color') : selectedColor;
+            context.strokeStyle = (selectedTool == "eraser") ? '#ffffff' : selectedColor;
             context.lineJoin = "round";
             context.lineCap = "round";
             context.lineWidth = thickness;
@@ -392,6 +432,14 @@ function DrawingEditor(randomId) {
     function removeTextAreaPopup() {
         $j('#textAreaPopUp' + id).hide();
     };
+
+    function clearCanvas() {
+
+        removeTextAreaPopup();
+        canvas.width = canvas.width;
+        removeTextAreaPopup();
+        $j('#encodedImage' + id).val(canvas.toDataURL());
+    }
 
     function saveTextFromArea(x, y) {
         //get the value of the textarea 

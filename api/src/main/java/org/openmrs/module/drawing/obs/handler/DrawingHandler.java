@@ -32,7 +32,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Obs;
 import org.openmrs.User;
-import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.drawing.AnnotatedImage;
 import org.openmrs.module.drawing.ImageAnnotation;
@@ -54,19 +53,19 @@ import org.w3c.dom.NodeList;
 public class DrawingHandler extends ImageHandler {
 	
 	private Log log = LogFactory.getLog(DrawingHandler.class);
-	
+	static int i=0;
 	/**
 	 * @see org.openmrs.obs.handler.ImageHandler#saveObs(org.openmrs.Obs)
 	 */
 	@Override
-	public Obs saveObs(Obs obs) throws APIException {
-        ComplexData c=obs.getComplexData();
-        AnnotatedImage ai=(AnnotatedImage) c.getData();
-        obs.setComplexData(new ComplexData(c.getTitle(), ai.getImage()));
+	public Obs saveObs(Obs obs) {
+		ComplexData c = obs.getComplexData();
+		AnnotatedImage ai = (AnnotatedImage) c.getData();
+		obs.setComplexData(new ComplexData(c.getTitle(), ai.getImage()));
 		Obs o = super.saveObs(obs);
-		for(ImageAnnotation annotation:ai.getAnnotations())
-			saveAnnotation(o,annotation,annotation.getStatus() == Status.DELETE);
-		
+		for (ImageAnnotation annotation : ai.getAnnotations())
+			saveAnnotation(o, annotation, annotation.getStatus() == Status.DELETE);
+		log.info("drawing:saving complexObs:" + o);
 		
 		return o;
 	}
@@ -82,8 +81,7 @@ public class DrawingHandler extends ImageHandler {
 		}
 		AnnotatedImage aimage = loadMetadata(obs, new AnnotatedImage(img));
 		
-		String url = "/" + WebConstants.WEBAPP_NAME + "/module/drawing/manage.form?obsId="
-		        + obs.getId();
+		String url = "/" + WebConstants.WEBAPP_NAME + "/module/drawing/manage.form?obsId=" + obs.getId();
 		if (view == WebConstants.HYPERLINK_VIEW) {
 			obs.setComplexData(new ComplexData(imageFile.getName(), url));
 		} else if (view == WebConstants.HTML_VIEW) {

@@ -1,16 +1,25 @@
 
-#drawingheader{
-	margin: 0 0 10px 0;
-	padding:10px;
-	height:auto;
-	border: 1px solid #000;
-	background-color: #ccc;
+#drawingHeader{
+	 border: 2px solid #26445f;
+    border-left:0px;
+    border-right:0px;
+    background-color:#3d668f;
+    height:auto;
+    width: auto;
+    padding-top: 5px;
+    background-color:#3d668f;
+    
+     
 }
-.canvasdiv{
-	float:left;
-	margin-bottom: 10px;
-	width: 100%;
-	border: 1px solid #000;
+.canvasDiv{
+	 float:left;
+    background-color:#FFFFFF;
+    margin:10px 10px 10px 10px;
+    width: 98.3%;
+    border: 1px dotted #26445f;
+     -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
 	
 }
 #sidepane{
@@ -20,12 +29,21 @@
 	padding: 10px;
 	border:1px solid #000;
 }
-#drawingfooter{
-	clear: both;
-	margin-bottom: 10px;
-	padding: 10px;
-	border:1px solid #000;
-	background-color: #ccc;
+.editorContainer{
+    background-color: #efefef;
+    border: 3px solid #26445f;
+     -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+}
+#drawingFooter{
+	 clear: both;
+    padding: 10px;
+    width: auto;
+    border: 2px solid #26445f;
+    border-left:0px;
+    border-right:0px;
+    background-color:#3d668f;
 }
 #drawingObsform{
 	margin-bottom: 10px;
@@ -33,20 +51,40 @@
 	border:1px solid #1AAC9B;
 }
 .iconDiv{
-	height:20px;
-	width: 20px;
-	float:left;	
-	border: 1px solid #999;
-	padding:2px;
-	margin-left: 3px;
-	margin-right: 3px;
-	background-color: #DDD;
-	
+	 height:auto;
+    width: auto;
+    float:left;    
+    border: 1px solid #000000;
+    padding:2px;
+    margin-top:10px;
+    margin-bottom:10px;
+    margin-left: 3px;
+    margin-right: 3px;
+    background-color: #efefef;
+    color:#ffffff;
+     -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
 	
 }
+
+.selection{
+    height:20px;
+    width: auto;
+    float:left;    
+    padding:2px;
+    margin-top:10px;
+    margin-bottom:10px;
+    margin-left: 3px;
+    margin-right: 3px;
+    color:#ffffff;
+     -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    
+}
 .highlight {
-	 background: #EEEEEE;
-	 border-color: #F1CA7E
+	 border-color: #F1CA7E;
  }
  .imageprop{
  	height:20px;

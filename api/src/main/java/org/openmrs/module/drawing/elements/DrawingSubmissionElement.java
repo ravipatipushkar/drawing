@@ -1,17 +1,11 @@
 package org.openmrs.module.drawing.elements;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Map;
 
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -19,8 +13,8 @@ import org.openmrs.Concept;
 import org.openmrs.Obs;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.drawing.AnnotatedImage;
+import org.openmrs.module.drawing.DrawingUtil;
 import org.openmrs.module.drawing.ImageAnnotation;
-import org.openmrs.module.drawing.Position;
 import org.openmrs.module.htmlformentry.FormEntryContext;
 import org.openmrs.module.htmlformentry.FormEntryContext.Mode;
 import org.openmrs.module.htmlformentry.FormEntrySession;
@@ -70,35 +64,23 @@ public class DrawingSubmissionElement implements HtmlGeneratorElement, FormSubmi
 	@Override
 	public void handleSubmission(FormEntrySession session, HttpServletRequest submission) {
 		String encodedImage = submission.getParameter("encodedImage" + id);
-		ArrayList<ImageAnnotation> annotations = new ArrayList<ImageAnnotation>();
-		if (StringUtils.isNotBlank(submission.getParameter("annotationCounter" + id))) {
-			int annotationsCount = Integer.parseInt(submission.getParameter("annotationCounter" + id));
-			for (int i = 0; i < annotationsCount; i++) {
-				String s = submission.getParameter("annotation" + id + i);
-				String[] data = s.split("\\|");
-				if (data == null || data.length < 5) {
-					log.error("incorrect annotation format");
-					continue;
-				}
-				annotations.add(new ImageAnnotation(Integer.parseInt(data[0]), new Position(Integer.parseInt(data[1]),
-				        Integer.parseInt(data[2])), data[3], new Date(), Context.getAuthenticatedUser(), data[4]));
-			}
-		}
+		if (!StringUtils.isNotBlank(encodedImage) && encodedImage.contains(","))
+			throw new RuntimeException("Image not encoded in proper format");
+		
 		try {
-			byte[] rawImageBytes = Base64.decodeBase64(encodedImage.split(",")[1]);
-			ByteArrayInputStream bs = new ByteArrayInputStream(rawImageBytes);
-			AnnotatedImage ai = new AnnotatedImage(ImageIO.read(bs));
-			ai.setAnnotations(annotations.toArray(new ImageAnnotation[0]));
-			if (session.getContext().getMode() == Mode.EDIT && existingObs != null) {
+			
+			AnnotatedImage ai = new AnnotatedImage(DrawingUtil.base64ToImage(encodedImage));
+			ai.setAnnotations(DrawingUtil.getAnnotations(submission, id));
+			if (session.getContext().getMode() == Mode.EDIT && existingObs != null)
 				session.getSubmissionActions().modifyObs(existingObs, questionConcept,
 				    new ComplexData(existingObs.getComplexData().getTitle(), ai), null, null);
-			} else {
-				session.getSubmissionActions().createObs(questionConcept, new ComplexData("drawing.png", ai), null, null);
-			}
-			bs.close();
+			else
+				session.getSubmissionActions().createObs(questionConcept, new ComplexData("drawingObs.png", ai), null, null);
+			
 		}
 		catch (Exception e) {
-			log.error("cannot create obs :", e);
+			log.error("cannot create obs :" + e.getMessage(), e);
+			throw new RuntimeException("Unable to save complex Observation!");
 		}
 	}
 	
@@ -109,16 +91,32 @@ public class DrawingSubmissionElement implements HtmlGeneratorElement, FormSubmi
 		if (context.getMode().equals(Mode.VIEW) && existingObs != null) {
 			Obs complexObs = Context.getObsService().getComplexObs(existingObs.getId(), "");
 			AnnotatedImage ai = (AnnotatedImage) existingObs.getComplexData().getData();
-			String encodedImage = encodeComplexData(ai.getImage());
+			String encodedImage = null;
+			try {
+				encodedImage = DrawingUtil.imageToBase64(ai.getImage());
+			}
+			catch (IOException e) {
+				log.error("unable to encode image to Base64 format", e);
+			}
 			sb.append("<link rel='stylesheet' media='screen' type='text/css' href='/" + WebConstants.WEBAPP_NAME
-		        + "/moduleResources/drawing/drawingHtmlForm.css' />");
-			sb.append("<script type='text/javascript'>var ancount" + id + "=0;    var redDot ='/openmrstru/moduleResources/drawing/images/red-dot.png';var close = '/openmrstru/moduleResources/drawing/close.gif';function createMarker" + id + "(identification, x, y, text, stat) {var annotationId = \"marker" + id + "\" + ancount" + id + ";ancount" + id + "++;y = y + $j('#canvasDiv"
+			        + "/moduleResources/drawing/drawingHtmlForm.css' />");
+			sb.append("<script type='text/javascript'>var ancount"
 			        + id
-			        + "').offset().top;x = x + $j('#canvasDiv"
+			        + "=0;    var redDot ='/openmrstru/moduleResources/drawing/images/red-dot.png';var close = '/openmrstru/moduleResources/drawing/close.gif';function createMarker"
 			        + id
-			        + "').offset().left;var annDivData = \"<img src='\" + close + \"' style='float:right' onClick='$j(this).parent().parent().fadeOut(500)'/><span style='background-color:white'>\" + text + \"</span></br>\";var v = '<div class=\"container\"><div style=\"position:absolute;z-index:5;display:none\"><div id=\"' + annotationId + '_data\" class=\"divContainerDown\">' + annDivData + '</div><div class=\"calloutDown\"><div class=\"calloutDown2\"></div></div></div>';$j('#canvasDiv"
+			        + "(identification, x, y, text, stat) {var annotationId = \"marker"
 			        + id
-			        + "').append(v + '<img id=\"' + annotationId + '\" src=\"' + redDot + '\" style=\"top:' + y + 'px;left:' + x + 'px;position:absolute;z-index:4\"/></div>');$j('#' + annotationId).click(function(event) {$j('#' + annotationId + '_data').parent().css('top', event.pageY - $j('#' + annotationId + '_data').parent().height());$j('#' + annotationId + '_data').parent().css('left', event.pageX - $j('#' + annotationId + '_data').parent().width() / 8 - 5);$j('#' + annotationId + '_data').parent().show();});}");
+			        + "\" + ancount"
+			        + id
+			        + ";ancount"
+			        + id
+			        + "++;var annDivData = \"<img src='\" + close + \"' style='float:right' onClick='$j(this).parent().parent().fadeOut(500)'/><span style='background-color:white'>\" + text + \"</span></br>\";var v = '<div class=\"container\"><div style=\"position:absolute;z-index:5;display:none\"><div id=\"' + annotationId + '_data\" class=\"divContainerDown\">' + annDivData + '</div><div class=\"calloutDown\"><div class=\"calloutDown2\"></div></div></div>';$j('#canvasDiv"
+			        + id
+			        + "').append(v + '<img id=\"' + annotationId + '\" src=\"' + redDot + '\" style=\"top:' + y + 'px;left:' + x + 'px;position:absolute;z-index:4\"/></div>');$j('#' + annotationId).click(function(event) {$j('#' + annotationId + '_data').parent().css('top', event.pageY-$j('#canvasDiv"
+			        + id
+			        + "').offset().top - $j('#' + annotationId + '_data').parent().height());$j('#' + annotationId + '_data').parent().css('left', event.pageX-$j('#canvasDiv"
+			        + id
+			        + "').offset().left - $j('#' + annotationId + '_data').parent().width() / 8 - 5);$j('#' + annotationId + '_data').parent().show();});}");
 			
 			sb.append("$j(document).ready(function(){");
 			for (ImageAnnotation annotation : ai.getAnnotations())
@@ -126,8 +124,8 @@ public class DrawingSubmissionElement implements HtmlGeneratorElement, FormSubmi
 				        + annotation.getLocation().getY() + ",'" + annotation.getText() + "','" + annotation.getStatus()
 				        + "');");
 			sb.append("})</script>");
-			sb.append("<h4>" + complexObs.getConcept().getName(Context.getLocale()).getName() + "bhnbjbhj</h4>");
-			sb.append("<div id='canvasDiv" + id + "'><img src='" + encodedImage + "'></div>");
+			sb.append("<h4>" + complexObs.getConcept().getName(Context.getLocale()).getName() + "</h4>");
+			sb.append("<div id='canvasDiv" + id + "' style='position:relative'><img  src='" + encodedImage + "'></div>");
 			
 			//sb.append(complexData.getData());
 		} else if (context.getMode() == Mode.EDIT || context.getMode() == Mode.ENTER) {
@@ -150,15 +148,24 @@ public class DrawingSubmissionElement implements HtmlGeneratorElement, FormSubmi
 					sb.append("v" + id + ".createMarker(" + annotation.getId() + "," + annotation.getLocation().getX() + ","
 					        + annotation.getLocation().getY() + ",'" + annotation.getText() + "','" + annotation.getStatus()
 					        + "');");
-				String encodedImage = encodeComplexData(ai.getImage());
+				String encodedImage = null;
+				try {
+					encodedImage = DrawingUtil.imageToBase64(ai.getImage());
+				}
+				catch (IOException e) {
+					log.error("unable to encode image to Base64 format", e);
+				}
 				if (StringUtils.isNotEmpty(encodedImage))
 					sb.append("v" + id + ".loadExistingImage('" + encodedImage + "');");
 				
 			}
 			
 			sb.append("v" + id + ".setSubmit(false);v" + id + ".setFormId('htmlform');}); </script>");
-			sb.append("<div>");
-			sb.append("<div id='drawingheader'>");
+			sb.append("<div class='editorContainer'>");
+			sb.append("<div id='drawingHeader'>");
+			sb.append("<div id='cursorDiv" + id + "' class='iconDiv'><img id='cursor' src='/" + WebConstants.WEBAPP_NAME
+			        + "/moduleResources/drawing/images/cursor_icon.png' alt='cursor' class='imageprop' /></div>");
+			
 			sb.append("<div id='pencilDiv" + id + "' class='iconDiv'><img id='pencil' src='/" + WebConstants.WEBAPP_NAME
 			        + "/moduleResources/drawing/images/pencil_icon.png' alt='pencil' class='imageprop' /></div>");
 			sb.append("<div id='eraserDiv" + id + "' class='iconDiv'><img id='eraser' src='/" + WebConstants.WEBAPP_NAME
@@ -175,41 +182,29 @@ public class DrawingSubmissionElement implements HtmlGeneratorElement, FormSubmi
 			        + id
 			        + "' class='iconDiv'><img src='/"
 			        + WebConstants.WEBAPP_NAME
-			        + "/moduleResources/drawing/images/italic_icon.png' alt='italic'  class='imageprop'/></div>Font Size:<select id='fontSize"
-			        + id + "'><option>24</option><option>28</option><option>32</option><option>38</option></select></div>");
-			sb.append("<div id='thicknessDiv" + id
+			        + "/moduleResources/drawing/images/italic_icon.png' alt='italic'  class='imageprop'/></div><div class='selection'>Font Size:<select id='fontSize"
+			        + id
+			        + "'><option>24</option><option>28</option><option>32</option><option>38</option></select></div></div>");
+			sb.append("<div class='selection'><div id='thicknessDiv" + id
 			        + "' style='display: none;float: left;margin-left: 5px' >Thickness:<select id='thickness" + id
-			        + "'><option>2</option><option>4</option><option>6</option><option>8</option></select></div>");
+			        + "'><option>2</option><option>4</option><option>6</option><option>8</option></select></div></div>");
 			sb.append("<div id='colorSelector" + id
 			        + "' style='float: left' class='colorselector'><div class='colorselector_innerdiv'></div></div>");
 			sb.append("<div style='clear:both;'></div>");
 			sb.append("</div>");
-			sb.append("<div id='canvasDiv" + id + "' class='canvasdiv'></div>");
+			sb.append("<div id='canvasDiv" + id + "' class='canvasDiv'></div>");
 			sb.append("<div id='textAreaPopUp" + id
 			        + "' style='position:absolute;display:none;z-index:1;'><textarea id='writableTextarea" + id
 			        + "' style='width:100px;height:50px;'></textarea><input type='button' value='save' id='saveText" + id
 			        + "'></div>");
-			sb.append("<div id='drawingfooter'><input type='button' id='clearCanvas" + id
+			sb.append("<div id='drawingFooter'><input type='button' id='clearCanvas" + id
 			        + "' value='Clear canvas' /><input type='button' id='saveImage" + id + "' value='Done Drawing'/>");
 			sb.append("<input type='hidden' id='encodedImage" + id + "' name='encodedImage" + id + "' ");
-			sb.append("/><input type='file' id='imageupload" + id + "' value='Open Image' /> </div>");
+			sb.append("/><input type='file' id='imageUpload" + id + "' value='Open Image' /><span id='saveNotification" + id
+			        + "' style='display:none;color:#ffffff;float:right'>DRAWING SAVED</span> </div>");
 			sb.append("</div>");
 		}
 		return sb.toString();
 	}
 	
-	public String encodeComplexData(Object o) {
-		String encodedImage = null;
-		try {
-			BufferedImage img = (BufferedImage) o;
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			ImageIO.write(img, "png", baos);
-			encodedImage = "data:image/png;base64," + Base64.encodeBase64String(baos.toByteArray());
-		}
-		catch (Exception e) {
-			log.error("cannot write image", e);
-			
-		}
-		return encodedImage;
-	}
 }
