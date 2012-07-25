@@ -81,6 +81,7 @@
             
         </table>
             <input type="hidden" id="encodedImage" name="encodedImage"/>
+            <input type="hidden" name="redirectUrl" value="${model.redirectUrl}">
         </form>
         </div>
         </c:when>

@@ -1,7 +1,6 @@
 package org.openmrs.module.drawing.web.controller;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,14 +15,13 @@ import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.drawing.AnnotatedImage;
 import org.openmrs.module.drawing.DrawingUtil;
-import org.openmrs.module.drawing.ImageAnnotation;
-import org.openmrs.module.drawing.Position;
 import org.openmrs.obs.ComplexData;
 import org.openmrs.validator.ObsValidator;
 import org.openmrs.web.WebConstants;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -36,12 +34,15 @@ public class DrawingWindowController {
 	
 	@RequestMapping(value = "/module/drawing/saveDrawing", method = RequestMethod.POST)
 	public String saveDrawing(@RequestParam(value = "encodedImage", required = true) String encodedImage,
-	                          @RequestParam(value = "patientId", required = false) Patient patient,
-	                          @RequestParam(value = "conceptId", required = false) Concept concept,
+	                          @RequestParam(value = "patientId", required = true) Patient patient,
+	                          @RequestParam(value = "conceptId", required = true) Concept concept,
 	                          @RequestParam(value = "encounterId", required = false) Encounter encounter,
-	                          @RequestParam(value = "date", required = true) String dateString, HttpServletRequest request) {
+	                          @RequestParam(value = "date", required = true) String dateString,
+	                          @RequestParam(value = "redirectUrl", required = true) String redirectUrl,
+	                          HttpServletRequest request) {
 		
-		String redirect = "/module/drawing/manage.form";
+		if (StringUtils.isBlank(redirectUrl))
+			redirectUrl = "/patientDashboard.form?patientId=" + patient.getPatientId();
 		
 		try {
 			Date date = StringUtils.isBlank(dateString) ? new Date() : Context.getDateFormat().parse(dateString);
@@ -54,16 +55,20 @@ public class DrawingWindowController {
 			ValidationUtils.invokeValidator(new ObsValidator(), o, obsErrors);
 			if (!obsErrors.hasErrors()) {
 				Context.getObsService().saveObs(o, "saving obs");
-				request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ATTR, "drawing.saved");
-				redirect = "redirect:/patientDashboard.form?patientId=" + patient.getPatientId();
-			} else
-				request.getSession().setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "drawing.save.error");
-			
+			} else {
+				obsErrors.getFieldErrors();
+				String s = "";
+				for (FieldError e : obsErrors.getFieldErrors()) {
+					s = s + e.getField() + " cannot be " + e.getRejectedValue() + "</br>";
+					request.getSession().setAttribute(WebConstants.OPENMRS_ERROR_ATTR, s);
+				}
+				
+			}
 		}
 		catch (Exception e) {
-			request.getSession().setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "drawing.save.error");
+			request.getSession().setAttribute(WebConstants.OPENMRS_ERROR_ARGS, "drawing.save.error");
 		}
-		return redirect;
+		return "redirect:" + redirectUrl;
 		
 	}
 	

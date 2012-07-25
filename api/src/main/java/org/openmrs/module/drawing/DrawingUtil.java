@@ -82,18 +82,19 @@ public class DrawingUtil {
 		if (id == null)
 			id = "";
 		ArrayList<ImageAnnotation> annotations = new ArrayList<ImageAnnotation>();
-		int annotationsCount = Integer.parseInt(request.getParameter("annotationCounter" + id));
-		for (int i = 0; i < annotationsCount; i++) {
-			String s = request.getParameter("annotation" + id + i);
-			String[] data = s.split("\\|");
-			if (data == null || data.length < 5) {
-				log.error("incorrect annotation format");
-				continue;
+		if (StringUtils.isNotBlank(request.getParameter("annotationCounter" + id))) {
+			int annotationsCount = Integer.parseInt(request.getParameter("annotationCounter" + id));
+			for (int i = 0; i < annotationsCount; i++) {
+				String s = request.getParameter("annotation" + id + i);
+				String[] data = s.split("\\|");
+				if (data == null || data.length < 5) {
+					log.error("incorrect annotation format");
+					continue;
+				}
+				annotations.add(new ImageAnnotation(Integer.parseInt(data[0]), new Position(Integer.parseInt(data[1]),
+				        Integer.parseInt(data[2])), data[3], new Date(), Context.getAuthenticatedUser(), data[4]));
 			}
-			annotations.add(new ImageAnnotation(Integer.parseInt(data[0]), new Position(Integer.parseInt(data[1]), Integer
-			        .parseInt(data[2])), data[3], new Date(), Context.getAuthenticatedUser(), data[4]));
 		}
-		
 		return annotations.toArray(new ImageAnnotation[0]);
 	}
 }

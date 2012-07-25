@@ -68,7 +68,6 @@ public class DrawingSubmissionElement implements HtmlGeneratorElement, FormSubmi
 			throw new RuntimeException("Image not encoded in proper format");
 		
 		try {
-			
 			AnnotatedImage ai = new AnnotatedImage(DrawingUtil.base64ToImage(encodedImage));
 			ai.setAnnotations(DrawingUtil.getAnnotations(submission, id));
 			if (session.getContext().getMode() == Mode.EDIT && existingObs != null)
