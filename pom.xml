@@ -22,9 +22,9 @@
 	</organization>
 
 	<scm>
-		<connection>scm:svn:http://svn.openmrs.org/openmrs-modules/drawing/trunk/</connection>
-		<developerConnection>scm:svn:http://svn.openmrs.org/openmrs-modules/drawing/trunk/</developerConnection>
-		<url>http://svn.openmrs.org/openmrs-modules/drawing/trunk/</url>
+		<connection>scm:git:https://github.com/ravipatipushkar/drawing/</connection>
+		<developerConnection>scm:git:https://github.com/ravipatipushkar/drawing/</developerConnection>
+		<url>https://github.com/ravipatipushkar/drawing/</url>
 	</scm>
 
 	<modules>
