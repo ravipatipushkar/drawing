@@ -30,11 +30,12 @@
 			<type>jar</type>
 		</dependency>
 		
-         <dependency>
+          <dependency>
 			<groupId>org.openmrs.module</groupId>
 			<artifactId>htmlformentry-api</artifactId>
-			<version>1.9.5-SNAPSHOT</version>
-			<scope>provided</scope>
+			<version>1.9.4</version>
+			<type>jar</type>
+			
 		</dependency>
 		
 				
