@@ -13,8 +13,7 @@
  */
 package org.openmrs.module.drawing;
 
-
-import org.apache.commons.logging.Log; 
+import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.ModuleActivator;
@@ -28,13 +27,13 @@ import org.openmrs.module.htmlformentry.HtmlFormEntryService;
 public class DrawingActivator implements ModuleActivator {
 	
 	protected Log log = LogFactory.getLog(getClass());
-		
+	
 	/**
 	 * @see ModuleActivator#willRefreshContext()
 	 */
 	public void willRefreshContext() {
 		log.info("Refreshing Drawing Module");
-
+		
 	}
 	
 	/**
@@ -42,16 +41,6 @@ public class DrawingActivator implements ModuleActivator {
 	 */
 	public void contextRefreshed() {
 		log.info("Drawing Module refreshed");
-		if (ModuleFactory.isModuleStarted("htmlformentry")){
-			 try {
-				 HtmlFormEntryService hfes=Context.getService(HtmlFormEntryService.class); 
-				 hfes.addHandler("drawing", new DrawingTagHandler());
-				 System.out.println("handler added");
-		        } catch (Exception ex){
-		            ex.printStackTrace(System.out);
-		            log.error("failed to register drawing tag in drawing");
-		        }
-			}
 		
 	}
 	
@@ -68,6 +57,17 @@ public class DrawingActivator implements ModuleActivator {
 	 */
 	public void started() {
 		log.info("Drawing Module started");
+		if (ModuleFactory.isModuleStarted("htmlformentry")) {
+			try {
+				HtmlFormEntryService hfes = Context.getService(HtmlFormEntryService.class);
+				hfes.addHandler("drawing", new DrawingTagHandler());
+				log.info("drawing : drawing tag registered");
+			}
+			catch (Exception ex) {
+				
+				log.error("failed to register drawing tag in drawing", ex);
+			}
+		}
 	}
 	
 	/**
@@ -83,5 +83,5 @@ public class DrawingActivator implements ModuleActivator {
 	public void stopped() {
 		log.info("Drawing Module stopped");
 	}
-		
+	
 }

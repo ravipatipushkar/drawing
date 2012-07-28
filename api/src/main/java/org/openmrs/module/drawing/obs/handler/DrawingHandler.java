@@ -53,7 +53,6 @@ import org.w3c.dom.NodeList;
 public class DrawingHandler extends ImageHandler {
 	
 	private Log log = LogFactory.getLog(DrawingHandler.class);
-	static int i=0;
 	/**
 	 * @see org.openmrs.obs.handler.ImageHandler#saveObs(org.openmrs.Obs)
 	 */
@@ -123,9 +122,6 @@ public class DrawingHandler extends ImageHandler {
 						String userid = attributes.getNamedItem("userid").getNodeValue();
 						String xcoordinate = attributes.getNamedItem("xcoordinate").getNodeValue();
 						String ycoordinate = attributes.getNamedItem("ycoordinate").getNodeValue();
-						
-						// int annotationid = Integer.parseInt(idString);
-						//Pixel pixel = new Pixel(Integer.parseInt(xcoordinate), Integer.parseInt(ycoordinate));
 						Position position = new Position(Integer.parseInt(xcoordinate), Integer.parseInt(ycoordinate));
 						User user = Context.getUserService().getUser(Integer.parseInt(userid));
 						annotations.add(new ImageAnnotation(Integer.parseInt(idString), position, text, new Date(Long
@@ -172,7 +168,6 @@ public class DrawingHandler extends ImageHandler {
 					int existingId = Integer.parseInt(idString);
 					if (existingId == annotation.getId() && !(annotation.getStatus() == Status.UNCHANGED)) {
 						annotationsParent.removeChild(annotationNodeList.item(i));
-						System.out.println("removed annotation");
 						break;
 					}
 					if (existingId >= newId)
