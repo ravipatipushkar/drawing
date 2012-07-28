@@ -12,6 +12,7 @@
      
 }
 .canvasDiv{
+	position:relative;
 	 float:left;
     background-color:#FFFFFF;
     margin:10px 10px 10px 10px;

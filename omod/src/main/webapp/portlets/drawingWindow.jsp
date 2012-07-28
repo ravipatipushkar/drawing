@@ -98,36 +98,24 @@
          <div id="drawingHeader">
              <div id='cursorDiv' class='iconDiv'><img id='cursor' src="<openmrs:contextPath/>/moduleResources/drawing/images/cursor_icon.png" alt='cursor' class='imageprop' /></div>
              <div id="pencilDiv" class="iconDiv"><img id="pencil" src="<openmrs:contextPath/>/moduleResources/drawing/images/pencil_icon.png" alt="pencil" class="imageprop" /></div>
-              <div id="eraserDiv" class="iconDiv"><img id="eraser" src="<openmrs:contextPath/>/moduleResources/drawing/images/eraser_icon.png" alt="eraser" class="imageprop" /></div>
-              <div id="textDiv" class="iconDiv"><img id="text" src="<openmrs:contextPath/>/moduleResources/drawing/images/text_icon.png" alt="text" class="imageprop" /></div>
-              <div id='fontpropertiesDiv' style="display: none;float: left;margin-left: 5px" >
-                    <div id='boldDiv' class="iconDiv"><img src="<openmrs:contextPath/>/moduleResources/drawing/images/bold_icon.png" alt="bold" class="imageprop" /></div>
-                    <div id='italicDiv' class="iconDiv"><img src="<openmrs:contextPath/>/moduleResources/drawing/images/italic_icon.png" alt="italic"  class="imageprop"/></div>
-                 <div class="selection">
-                  Font Size:
-               <select id="fontSize">
-                   <option>24</option>
-                   <option>28</option>
-                   <option>32</option>
-                   <option>38</option>
-               </select>
-               </div>
-                </div>
-               <div id='thicknessDiv' style="display: none;float: left;margin-left: 5px" >
-               <div class="selection">
-               Thickness:
-               <select id="thickness">
-                   <option>2</option>
-                   <option>4</option>
-                   <option>6</option>
-                   <option>8</option>
-               </select>
-               </div>
-               </div>
-                <div id="colorSelector"  style="float: left" class="colorselector">
-                  <div class="colorselector_innerdiv"></div>     
-               </div>
-              <div style="clear:both;"></div>
+             <div id="eraserDiv" class="iconDiv"><img id="eraser" src="<openmrs:contextPath/>/moduleResources/drawing/images/eraser_icon.png" alt="eraser" class="imageprop" /></div>
+             <div id="textDiv" class="iconDiv"><img id="text" src="<openmrs:contextPath/>/moduleResources/drawing/images/text_icon.png" alt="text" class="imageprop" /></div>
+             <div id='fontpropertiesDiv' style="display: none;float: left;margin-left: 5px" >
+                  <div id='boldDiv' class="iconDiv"><img src="<openmrs:contextPath/>/moduleResources/drawing/images/bold_icon.png" alt="bold" class="imageprop" /></div>
+                  <div id='italicDiv' class="iconDiv"><img src="<openmrs:contextPath/>/moduleResources/drawing/images/italic_icon.png" alt="italic"  class="imageprop"/></div>
+                  <div class="selection" >
+                  	   <div style="float:left">Font Size:</div><div id="fontSlider" style="width:100px;float:right"></div>
+               	  </div>
+             </div>
+             <div id='thicknessDiv' style="display: none;float: left;margin-left: 5px" >
+               		<div class="selection">
+               			<div style="float:left">Thickness:</div><div id="thicknessSlider" style="width:100px;float:right"></div>
+               		</div>
+             </div>
+             <div id="colorSelector"  style="float: left" class="colorselector">
+                    <div class="colorselector_innerdiv"></div>     
+             </div>
+             <div style="clear:both;"></div>
               
         </div>
         <div id="canvasDiv" class="canvasDiv">

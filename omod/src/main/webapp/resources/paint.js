@@ -5,14 +5,14 @@ function DrawingEditor(randomId) {
     var selectedTool = "";
     var context;
     var canvas;
-    var thickness = 5;
+    var thickness = 6;
     var selectedColor = '#ff0000';
     var canvasWidth;
     var canvasHeight;
     var bold = '';
     var tools = ['pencil', 'eraser', 'text', 'cursor'];
     var italic = '';
-    var fontSize = '24';
+    var fontSize = '25';
     var font = 'Courier New';
     var ancount = 0;
     var blueDot = openmrsContextPath + "/moduleResources/drawing/blue-dot.png";
@@ -69,8 +69,10 @@ function DrawingEditor(randomId) {
         context = canvas.getContext("2d");
         $j('#encodedImage' + id).val(canvas.toDataURL());
         $j(canvas).mousedown(function(event) {
-            clickX = event.pageX - this.offsetLeft;
-            clickY = event.pageY - this.offsetTop;
+            clickX = getRelativeLeft(event.pageX) - this.offsetLeft;
+            clickY = getRelativeTop(event.pageY) - this.offsetTop;
+			//alert(event.pageX+'   '+event.pageY);
+			//alert(clickX+'      '+clickY);
             if (selectedTool == "cursor") {
                 clicked = {
                     x: clickX,
@@ -81,20 +83,17 @@ function DrawingEditor(randomId) {
                 if (currentLoadedImage != null && clickX.between(currentLoadedImageCoordinates.x, currentLoadedImage.width + currentLoadedImageCoordinates.x) && clickY.between(currentLoadedImageCoordinates.y, currentLoadedImage.height + currentLoadedImageCoordinates.y)) {
                     $j(this).css('cursor', 'move');
                     $j(this).bind('mousemove', function(event) {
-                        //document.onselectstart = function(){ return false; }
                         imageCanBeMoved = true;
                         clearCanvas();
-                        //(currentLoadedImage, event.pageX - this.offsetLeft, event.pageY - this.offsetTop);
-                        imageMoveCoordinates.x = event.pageX - this.offsetLeft - clicked.x;
-                        imageMoveCoordinates.y = event.pageY - this.offsetTop - clicked.y;
+                        imageMoveCoordinates.x =getRelativeLeft(event.pageX) - this.offsetLeft - clicked.x;
+                        imageMoveCoordinates.y = getRelativeTop(event.pageY) - this.offsetTop - clicked.y;
                         console.log(imageMoveCoordinates.x + "      " + imageMoveCoordinates.y);
                         drawImage(currentLoadedImage, currentLoadedImageCoordinates.x + imageMoveCoordinates.x, currentLoadedImageCoordinates.y + imageMoveCoordinates.y);
-                        //currentLoadedImageCoordinates={x:currentLoadedImageCoordinates.x + localx,y:currentLoadedImageCoordinates.y + localy};
                     });
                 }
             } else if (selectedTool == 'pencil' || selectedTool == 'eraser') {
                 $j(this).bind('mousemove', function(event) {
-                    draw(event.pageX - this.offsetLeft, event.pageY - this.offsetTop);
+                    draw(getRelativeLeft(event.pageX) - this.offsetLeft, getRelativeTop(event.pageY) - this.offsetTop);
 
                 });
             } else if (selectedTool == 'text') {
@@ -103,7 +102,19 @@ function DrawingEditor(randomId) {
                 $j('#writableTextarea' + id).css('color', selectedColor);
             }
         });
-
+        $j( "#fontSlider"+id ).slider({
+		     value:25,
+		     change: function(event, ui) { 
+                fontSize=ui.value;
+			 }
+		});
+		$j( "#thicknessSlider"+id ).slider({
+		     value:6,
+			 max:50,
+		     change: function(event, ui) { 
+                thickness=ui.value;
+			 }
+		});
         $j('#colorSelector' + id).ColorPicker({
             color: '#ff0000',
             onShow: function(colpkr) {
@@ -252,8 +263,8 @@ function DrawingEditor(randomId) {
         });
 
         $j('#canvasDiv' + id).dblclick(function(event) {
-            clickX = event.pageX - 9;
-            clickY = event.pageY - 31;
+            clickX = getRelativeLeft(event.pageX) - 9;
+            clickY = getRelativeTop(event.pageY) - 31;
             var annotationId = "marker" + ancount;
             ancount++;
             divx = clickX - 23;
@@ -262,8 +273,8 @@ function DrawingEditor(randomId) {
             $j(this).append(v + '<img id="' + annotationId + '" src="' + redDot + '" style="top:' + clickY + 'px;left:' + clickX + 'px;position:absolute;z-index:4"/></div>');
 
             $j('#' + annotationId).click(function(event) {
-                $j('#' + annotationId + '_data').parent().css('top', event.pageY - $j('#' + annotationId + '_data').parent().height());
-                $j('#' + annotationId + '_data').parent().css('left', event.pageX - $j('#' + annotationId + '_data').parent().width() / 8 - 5);
+                $j('#' + annotationId + '_data').parent().css('top', getRelativeTop(event.pageY) - $j('#' + annotationId + '_data').parent().height());
+                $j('#' + annotationId + '_data').parent().css('left', getRelativeLeft(event.pageX) - $j('#' + annotationId + '_data').parent().width() / 8 - 5);
 
                 $j('#' + annotationId + '_data').parent().fadeIn(500);
             });
@@ -282,21 +293,28 @@ function DrawingEditor(randomId) {
 
 
     };
+	
+	function getRelativeTop(top){
+	          return top-$j('#canvasDiv' + id).offset().top;
+	}
+	
+	function getRelativeLeft(left){
+	         return left-$j('#canvasDiv' + id).offset().left;
+	}
 
     this.createMarker = function(identification, x, y, text, stat) {
         var annotationId = "marker" + id + ancount;
         ancount++;
-        y = y + $j('#canvasDiv' + id).offset().top;
-        x = x + $j('#canvasDiv' + id).offset().left;
         var annDivData = "<img src='" + close + "' style='float:right' onClick='$j(this).parent().parent().fadeOut(500)'/><span style='background-color:white'>" + text + "</span></br><span><a class='link move'> Move </a> <a  class='edit link'> Edit </a> <a class='link delete'> Delete </a></span>";
         var v = '<div class="container"><div style="position:absolute;z-index:5;display:none"><div id="' + annotationId + '_data" class="divContainerDown">' + annDivData + '</div><div class="calloutDown"><div class="calloutDown2"></div></div></div>';
         $j('#canvasDiv' + id).append(v + '<img id="' + annotationId + '" src="' + redDot + '" style="top:' + y + 'px;left:' + x + 'px;position:absolute;z-index:4"/></div>');
-        $j('#' + annotationId).click(function(event) {
-            $j('#' + annotationId + '_data').parent().css('top', event.pageY - $j('#' + annotationId + '_data').parent().height());
-            $j('#' + annotationId + '_data').parent().css('left', event.pageX - $j('#' + annotationId + '_data').parent().width() / 8 - 5);
+        
+        setHandlers($j('#' + annotationId + '_data'));
+		$j('#' + annotationId).click(function(event) {
+            $j('#' + annotationId + '_data').parent().css('top', getRelativeTop(event.pageY) - $j('#' + annotationId + '_data').parent().height());
+            $j('#' + annotationId + '_data').parent().css('left', getRelativeLeft(event.pageX) - $j('#' + annotationId + '_data').parent().width() / 8 - 5);
             $j('#' + annotationId + '_data').parent().fadeIn(500);
         });
-        setHandlers($j('#' + annotationId + '_data'));
         annotationsCollection[annotationId + '_data'] = {
             data: text,
             position: {
@@ -323,34 +341,28 @@ function DrawingEditor(randomId) {
     function saveAnnotation(v) {
         $j(v).parent().fadeOut(500);
         var s = $j(v).children('textarea').val();
-        var changedHtml = "<img src='" + close + "' style='float:right' onClick='$j(this).parent().parent().fadeOut(500)'/><span style='background-color:white'>" + s + "</span></br><span><a class='link move'> Move </a> <a  class='edit link'> Edit </a> <a class='link delete'> Delete </a></span>";
-        $j(v).html(changedHtml);
-        setHandlers(v);
         if (annotationsCollection[$j(v).attr('id')] == null) annotationsCollection[$j(v).attr('id')] = {
             data: s,
-            position: getrelativePosition($j(v).parent().parent().children('img').position()),
+            position: $j(v).parent().parent().children('img').position(),
             id: -1,
             status: 'CHANGED'
         };
         else {
+		     if(!(typeof s === 'undefined'))
             annotationsCollection[$j(v).attr('id')].data = s;
-            annotationsCollection[$j(v).attr('id')].position = getrelativePosition($j(v).parent().parent().children('img').position());
+            annotationsCollection[$j(v).attr('id')].position = $j(v).parent().parent().children('img').position();
             annotationsCollection[$j(v).attr('id')].status = 'CHANGED';
         }
-
-    }
-
-    function getrelativePosition(obj) {
-        obj.top = obj.top - $j('#canvasDiv' + id).offset().top;
-        obj.left = obj.left - $j('#canvasDiv' + id).offset().left;
-        return obj;
+		var changedHtml = "<img src='" + close + "' style='float:right' onClick='$j(this).parent().parent().fadeOut(500)'/><span style='background-color:white'>" + annotationsCollection[$j(v).attr('id')].data + "</span></br><span><a class='link move'> Move </a> <a  class='edit link'> Edit </a> <a class='link delete'> Delete </a></span>";
+        $j(v).html(changedHtml);
+        setHandlers(v);
+        placeMarker(v);
 
     }
 
     function editOnClick(v) {
 
         var k = $j(v).children('span:first').text();
-        $j(v).data('value', k);
         $j(v).html('<textarea style="width:98%;resize: none;">' + k + '</textarea><span><a class="link save" > Save </a><a class="link resetAfterCancel" > Cancel </a></span>');
         $j(v).children('span:last').children('.save').click(function() {
             saveAnnotation($j(this).parent().parent());
@@ -362,16 +374,57 @@ function DrawingEditor(randomId) {
     }
 
     function moveOnClick(v) {
-        alert('not yet implemented');
+        var changedHtml = "<img src='" + close + "' style='float:right' onClick='$j(this).parent().parent().fadeOut(500)'/><span style='background-color:white'>place it here ?</span></br><span><a class='link save'> Save </a> <a  class='resetAfterCancel link'> Cancel </a></span>";
+        $j(v).parent().parent().children('img').attr('src',blueDot);
+		$j(v).parent().hide();
+		$j(v).html(changedHtml);
+		$j(v).children('span:last').children('.save').click(function() {
+            saveAnnotation($j(this).parent().parent());
+        });
+        $j(v).children('span:last').children('.resetAfterCancel').click(function() {
+            resetAfterCancel($j(this).parent().parent());
+        });
+        
+        $j(v).parent().parent().children('img').draggable(
+			{
+				zIndex: 	4,
+				containment : '#canvasDiv'+id,
+				start: function(event, ui) { 
+				    var calloutId=$j(this).attr('id')+'_data';
+					$j('#'+calloutId).parent().hide();
+				},
+				stop: function(event, ui) { 
+				    var calloutId=$j(this).attr('id')+'_data';
+					setCallOut(this);
+					$j('#'+calloutId).parent().show();
+				}
+			});
     }
+	
+	function setCallOut(image)
+	{
+	    var imageId=$j(image).attr('id');
+	    $j('#' + imageId + '_data').parent().css('top', $j(image).position().top - $j('#' + imageId + '_data').parent().height());
+            $j('#' + imageId + '_data').parent().css('left', $j(image).position().left+$j(image).width()/2 - $j('#' + imageId + '_data').parent().width() / 8 - 5);
+	}
+	
+	function placeMarker(v){
+		var marker=$j(v).parent().parent().children('img');
+		marker.attr('style','top:'+Math.round(annotationsCollection[$j(v).attr('id')].position.top)+'px;left:'+Math.round(annotationsCollection[$j(v).attr('id')].position.left)+'px;position:absolute;z-index:4');
+		marker.attr('src',redDot);
+	    marker.draggable( 'destroy' );
+	}
 
 
     function resetAfterCancel(k) {
-        var s = $j(k).data('value');
-        var changedHtml = "<img src='" + close + "' style='float:right' onClick='$j(this).parent().parent().fadeOut(500)'/><span style='background-color:white'>" + s + "</span></br><span><a class='link move'> Move </a> <a  class='edit link'> Edit </a> <a class='link delete'> Delete </a></span>";
+        var changedHtml = "<img src='" + close + "' style='float:right' onClick='$j(this).parent().parent().fadeOut(500)'/><span style='background-color:white'>" +annotationsCollection[$j(k).attr('id')].data + "</span></br><span><a class='link move'> Move </a> <a  class='edit link'> Edit </a> <a class='link delete'> Delete </a></span>";
         $j(k).html(changedHtml);
         setHandlers(k);
+		placeMarker(k);
+		$j(k).parent().hide();
     }
+	
+	
 
     function setHandlers(v) {
         $j(v).children('span:last').children('.edit').click(function() {
