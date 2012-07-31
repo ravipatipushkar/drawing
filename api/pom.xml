@@ -35,8 +35,8 @@
 			<artifactId>htmlformentry-api</artifactId>
 			<version>1.9.4</version>
 			<type>jar</type>
-			
-		</dependency>
+			<scope>provided</scope>
+		  </dependency>
 		
 				
 		

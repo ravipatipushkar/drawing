@@ -59,15 +59,20 @@ public class DrawingActivator implements ModuleActivator {
 		log.info("Drawing Module started");
 		if (ModuleFactory.isModuleStarted("htmlformentry")) {
 			try {
+				
 				HtmlFormEntryService hfes = Context.getService(HtmlFormEntryService.class);
+				
 				hfes.addHandler("drawing", new DrawingTagHandler());
+				
 				log.info("drawing : drawing tag registered");
 			}
 			catch (Exception ex) {
-				
 				log.error("failed to register drawing tag in drawing", ex);
+				
 			}
+			
 		}
+		
 	}
 	
 	/**

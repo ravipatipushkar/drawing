@@ -133,7 +133,7 @@
               <input type='button' id='clearCanvas' value="Clear Canvas" />
               <input type='button' id='saveImage' value="Save" />
               <input type="file" id="imageUpload" value="Open Image" /> 
-              <span id='saveNotification"+id+"' style='display:none;color:#ffffff;float:right'>DRAWING SAVED</span>
+              <span id='saveNotification' style='display:none;color:#ffffff;float:right'>DRAWING SAVED</span>
                          
         </div>
    </div>

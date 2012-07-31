@@ -181,12 +181,12 @@ public class DrawingSubmissionElement implements HtmlGeneratorElement, FormSubmi
 			        + id
 			        + "' class='iconDiv'><img src='/"
 			        + WebConstants.WEBAPP_NAME
-			        + "/moduleResources/drawing/images/italic_icon.png' alt='italic'  class='imageprop'/></div><div class='selection'>Font Size:<select id='fontSize"
+			        + "/moduleResources/drawing/images/italic_icon.png' alt='italic'  class='imageprop'/></div><div class='selection'><div style='float:left'>Font Size:</div><div id='fontSlider"
+			        + id + "' style='width:100px;float:right'></div></div></div>");
+			sb.append("<div id='thicknessDiv"
 			        + id
-			        + "'><option>24</option><option>28</option><option>32</option><option>38</option></select></div></div>");
-			sb.append("<div class='selection'><div id='thicknessDiv" + id
-			        + "' style='display: none;float: left;margin-left: 5px' >Thickness:<select id='thickness" + id
-			        + "'><option>2</option><option>4</option><option>6</option><option>8</option></select></div></div>");
+			        + "' style='display: none;float: left;margin-left: 5px' ><div class='selection'><div style='float:left'>Thickness:</div><div id='thicknessSlider"
+			        + id + "' style='width:100px;float:right'></div></div></div>");
 			sb.append("<div id='colorSelector" + id
 			        + "' style='float: left' class='colorselector'><div class='colorselector_innerdiv'></div></div>");
 			sb.append("<div style='clear:both;'></div>");
