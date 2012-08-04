@@ -1,32 +1,8 @@
 package org.openmrs.module.drawing.elements;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openmrs.Concept;
-import org.openmrs.Obs;
-import org.openmrs.api.context.Context;
-import org.openmrs.module.drawing.AnnotatedImage;
-import org.openmrs.module.drawing.DrawingUtil;
-import org.openmrs.module.drawing.ImageAnnotation;
-import org.openmrs.module.htmlformentry.FormEntryContext;
-import org.openmrs.module.htmlformentry.FormEntryContext.Mode;
-import org.openmrs.module.htmlformentry.FormEntrySession;
-import org.openmrs.module.htmlformentry.FormSubmissionError;
-import org.openmrs.module.htmlformentry.HtmlFormEntryUtil;
-import org.openmrs.module.htmlformentry.action.FormSubmissionControllerAction;
-import org.openmrs.module.htmlformentry.element.HtmlGeneratorElement;
-import org.openmrs.obs.ComplexData;
-import org.openmrs.web.WebConstants;
-
-public class DrawingSubmissionElement implements HtmlGeneratorElement, FormSubmissionControllerAction {
-	
+public class DrawingSubmissionElement {
+	//public class DrawingSubmissionElement implements HtmlGeneratorElement, FormSubmissionControllerAction {
+	/*
 	private static final Log log = LogFactory.getLog(DrawingSubmissionElement.class);
 	
 	private String id;
@@ -205,5 +181,5 @@ public class DrawingSubmissionElement implements HtmlGeneratorElement, FormSubmi
 		}
 		return sb.toString();
 	}
-	
+	*/
 }

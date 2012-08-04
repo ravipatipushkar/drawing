@@ -92,7 +92,7 @@
  	width: 20px;
  	cursor: pointer;
  }
- 
+
  .calloutDown
     {
         height: 0;
@@ -137,4 +137,18 @@
 .divContainerDown a:hover{
     text-decoration:underline;
 	
+}
+
+.templateImage{
+   width:430px;
+   height:270px;
+   margin:10px;
+   cursor: pointer;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+}
+
+.templateName{
+   cursor: pointer;
 }

@@ -16,12 +16,16 @@ function DrawingEditor(randomId) {
     var font = 'Courier New';
     var ancount = 0;
     var blueDot = openmrsContextPath + "/moduleResources/drawing/blue-dot.png";
-    var redDot = openmrsContextPath + "/moduleResources/drawing/images/red-dot.png";
+    var redDot = openmrsContextPath + "/moduleResources/drawing/red-dot.png";
     var close = openmrsContextPath + "/moduleResources/drawing/close.gif";
+    var loading = openmrsContextPath + "/moduleResources/drawing/loading.gif";
     var annotationsCollection = {};
     var formId = 'saveImageForm' + id;
     var submit = true;
     var currentLoadedImage = null;
+    var undoCollection = [];
+    var redoCollection = [];
+    var imageCollection = [];
     var currentLoadedImageCoordinates = {
         x: 0,
         y: 0
@@ -32,9 +36,6 @@ function DrawingEditor(randomId) {
     };
     var clicked = {};
     var imageCanBeMoved = false;
-
-
-
 
     this.getSubmit = function() {
         if (submit) return true;
@@ -71,8 +72,8 @@ function DrawingEditor(randomId) {
         $j(canvas).mousedown(function(event) {
             clickX = getRelativeLeft(event.pageX) - this.offsetLeft;
             clickY = getRelativeTop(event.pageY) - this.offsetTop;
-			//alert(event.pageX+'   '+event.pageY);
-			//alert(clickX+'      '+clickY);
+            //alert(event.pageX+'   '+event.pageY);
+            //alert(clickX+'      '+clickY);
             if (selectedTool == "cursor") {
                 clicked = {
                     x: clickX,
@@ -85,14 +86,17 @@ function DrawingEditor(randomId) {
                     $j(this).bind('mousemove', function(event) {
                         imageCanBeMoved = true;
                         clearCanvas();
-                        imageMoveCoordinates.x =getRelativeLeft(event.pageX) - this.offsetLeft - clicked.x;
+                        imageMoveCoordinates.x = getRelativeLeft(event.pageX) - this.offsetLeft - clicked.x;
                         imageMoveCoordinates.y = getRelativeTop(event.pageY) - this.offsetTop - clicked.y;
                         console.log(imageMoveCoordinates.x + "      " + imageMoveCoordinates.y);
+                        reDraw();
                         drawImage(currentLoadedImage, currentLoadedImageCoordinates.x + imageMoveCoordinates.x, currentLoadedImageCoordinates.y + imageMoveCoordinates.y);
                     });
                 }
             } else if (selectedTool == 'pencil' || selectedTool == 'eraser') {
+                addClick(clickX, clickY, false, selectedTool);
                 $j(this).bind('mousemove', function(event) {
+                    addClick(getRelativeLeft(event.pageX) - this.offsetLeft, getRelativeTop(event.pageY) - this.offsetTop, true, selectedTool);
                     draw(getRelativeLeft(event.pageX) - this.offsetLeft, getRelativeTop(event.pageY) - this.offsetTop);
 
                 });
@@ -102,19 +106,19 @@ function DrawingEditor(randomId) {
                 $j('#writableTextarea' + id).css('color', selectedColor);
             }
         });
-        $j( "#fontSlider"+id ).slider({
-		     value:25,
-		     change: function(event, ui) { 
-                fontSize=ui.value;
-			 }
-		});
-		$j( "#thicknessSlider"+id ).slider({
-		     value:6,
-			 max:50,
-		     change: function(event, ui) { 
-                thickness=ui.value;
-			 }
-		});
+        $j("#fontSlider" + id).slider({
+            value: 25,
+            change: function(event, ui) {
+                fontSize = ui.value;
+            }
+        });
+        $j("#thicknessSlider" + id).slider({
+            value: 6,
+            max: 50,
+            change: function(event, ui) {
+                thickness = ui.value;
+            }
+        });
         $j('#colorSelector' + id).ColorPicker({
             color: '#ff0000',
             onShow: function(colpkr) {
@@ -174,8 +178,7 @@ function DrawingEditor(randomId) {
                 reader.onload = function(event) {
                     var img = new Image();
                     img.onload = function() {
-                        currentLoadedImage = this;
-                        drawImage(img, 0, 0);
+                        drawMovableImage(this);
                     }
                     img.src = event.target.result;
                 }
@@ -213,6 +216,7 @@ function DrawingEditor(randomId) {
 
         $j('#clearCanvas' + id).click(function() {
             currentLoadedImage = null;
+            addClick(0, 0, false, "clear");
             currentLoadedImageCoordinates = {
                 x: 0,
                 y: 0
@@ -224,20 +228,17 @@ function DrawingEditor(randomId) {
             var dataUrl = canvas.toDataURL();
             $j('#encodedImage' + id).val(dataUrl);
             var count = 0;
-            $j(':hidden').remove('.annotationhiddenFields'+id);
+            $j(':hidden').remove('.annotationhiddenFields' + id);
             $j.each(annotationsCollection, function(index, value) {
-                $j('#' + formId).append('<input type="hidden" class="annotationhiddenFields'+id+'" name="annotation' + id + '' + count + '" value="' + value.id + '|' + Math.round(value.position.left) + '|' + Math.round(value.position.top) + '|' + value.data + '|' + value.status + '" >');
+                $j('#' + formId).append('<input type="hidden" class="annotationhiddenFields' + id + '" name="annotation' + id + '' + count + '" value="' + value.id + '|' + Math.round(value.position.left) + '|' + Math.round(value.position.top) + '|' + value.data + '|' + value.status + '" >');
                 count++;
             });
 
-            if ($j('#annotationCounter' + id).val() == null) 
-            	$j('#' + formId).append('<input type="hidden"  id="annotationCounter' + id + '" name="annotationCounter' + id + '" value="' + count + '"/>');
-            else 
-                $j('#annotationCounter' + id).val(count);
-            
-            $j('#saveNotification'+id).fadeIn(500).delay(2000).fadeOut(500);
-            if (submit) 
-            	$j('#' + formId).submit();
+            if ($j('#annotationCounter' + id).val() == null) $j('#' + formId).append('<input type="hidden"  id="annotationCounter' + id + '" name="annotationCounter' + id + '" value="' + count + '"/>');
+            else $j('#annotationCounter' + id).val(count);
+
+            $j('#saveNotification' + id).fadeIn(500).delay(2000).fadeOut(500);
+            if (submit) $j('#' + formId).submit();
 
         });
 
@@ -252,6 +253,28 @@ function DrawingEditor(randomId) {
             $j('#writableTextarea' + id).css('font-weight', bold);
         });
 
+        $j('#doneMoving' + id).click(function() {
+            $j('.tool').show();
+            $j('.dependendTool').hide();
+            $j(this).hide();
+            $j('#pencilDiv' + id).trigger('click');
+            if (currentLoadedImage != null) {
+                imageCollection.push(currentLoadedImage);
+                addClick(currentLoadedImageCoordinates.x, currentLoadedImageCoordinates.y, false, "cursor");
+
+            }
+            currentLoadedImage = null;
+            currentLoadedImageCoordinates = {
+                x: 0,
+                y: 0
+            };
+            imageMoveCoordinates = {
+                x: null,
+                y: null
+            };
+
+        });
+
         $j('#italicDiv' + id).toggle(function() {
             $j(this).addClass("highlight");
             italic = 'italic';
@@ -260,6 +283,79 @@ function DrawingEditor(randomId) {
             $j(this).removeClass("highlight");
             italic = '';
             $j('#writableTextarea' + id).css('font-style', italic);
+        });
+
+        $j('#undoDiv' + id).mousedown(function() {
+            $j(this).addClass("highlight");
+            if (undoCollection.length > 0) {
+                redoCollection.push(undoCollection.pop());
+                clearCanvas();
+                reDraw();
+            }
+        });
+        $j('#undoDiv' + id).mouseup(function() {
+            $j(this).removeClass("highlight");
+        });
+        //var v=undoCollection.pop();
+        //console.log( v.clickX+'   '+v.clickY+'   '+v.clickTool+"   "+v.clickColor+"   "+v.clickThickness+"   "+v.clickDrag);
+        $j('#redoDiv' + id).mousedown(function() {
+            $j(this).addClass("highlight");
+            if (redoCollection.length > 0) undoCollection.push(redoCollection.pop());
+            clearCanvas();
+            reDraw();
+        });
+        $j('.templateImage').click(function() {
+            drawMovableImage(this);
+            $j('#templatesDialog' + id).dialog('close');
+
+        });
+
+        $j('.templateName span').click(function() {
+            // alert($j(this).html());
+            $j.get(openmrsContextPath + "/module/drawing/getTemplate.form?templateName=" + $j(this).html(), function(data) {
+                //alert('got data'+data);
+                $j('.templateImage').attr('src', data);
+            }).error(function() {
+                alert('Unable load Templates');
+            }).success(function() {
+                //  alert('success');
+            }).complete(function() {
+                // alert('complete');
+            });
+
+        })
+        $j('.templateName').hover(function() {
+            $j(this).css({
+                color: '#1AAD9B'
+            });
+        }, function() {
+            $j(this).css({
+                color: 'black'
+            });
+        });
+
+        $j('#showTemplates' + id).click(function() {
+            $j('#templatesDialog' + id).dialog('open');
+        });
+
+        $j('#templatesDialog' + id).dialog({
+            autoOpen: false,
+            modal: true,
+            resizable: false,
+            draggable: false,
+            width: 800,
+            //maxWidth: 600,
+            height: 400,
+            buttons: {
+                "Cancel": function() {
+                    $j(this).dialog("close");
+                }
+            }
+        });
+
+
+        $j('#redoDiv' + id).mouseup(function() {
+            $j(this).removeClass("highlight");
         });
 
         $j('#canvasDiv' + id).dblclick(function(event) {
@@ -293,14 +389,123 @@ function DrawingEditor(randomId) {
 
 
     };
-	
-	function getRelativeTop(top){
-	          return top-$j('#canvasDiv' + id).offset().top;
-	}
-	
-	function getRelativeLeft(left){
-	         return left-$j('#canvasDiv' + id).offset().left;
-	}
+
+    function addClick(x, y, dragging, tool) {
+        redoCollection = [];
+        if (tool === "text") {
+            undoCollection.push({
+                clickX: x,
+                clickY: y,
+                clickTool: tool,
+                clickColor: selectedColor,
+                fontThickness: fontSize,
+                clickDrag: dragging,
+                italicStyle: italic,
+                boldStyle: bold,
+                text: $j('textarea#writableTextarea' + id).val()
+            });
+        } else if (tool === "cursor") {
+            undoCollection.push({
+                clickX: x,
+                clickY: y,
+                clickTool: tool,
+                image: imageCollection.pop()
+            });
+        } else if (tool === "clear") {
+            undoCollection.push({
+                clickTool: tool
+            });
+        } else {
+            undoCollection.push({
+                clickX: x,
+                clickY: y,
+                clickTool: tool,
+                clickColor: selectedColor,
+                clickThickness: thickness,
+                clickDrag: dragging
+            });
+        }
+    }
+
+    function drawMovableImage(k) {
+        var img = new Image();
+        img.src = k.src;
+        currentLoadedImage = img;
+        currentLoadedImageCoordinates = {
+            x: 0,
+            y: 0
+        };
+        prepareForImageMoving();
+        reDraw();
+        drawImage(img, 0, 0);
+
+    }
+
+    function prepareForImageMoving() {
+        $j('#cursorDiv' + id).trigger('click');
+        $j('.tool').hide();
+        $j('#doneMoving').show();
+    }
+
+    function getLastClearIndex() {
+        for (var j = undoCollection.length - 1; j >= 0; j--) {
+            if (undoCollection[j].clickTool === "clear") {
+                return j;
+            }
+        }
+        return 0;
+
+    }
+
+
+    function reDraw() {
+        for (i = getLastClearIndex(); i < undoCollection.length; i += 1) {
+            if (undoCollection[i].clickTool === "text") {
+                writeText(undoCollection[i].clickX, undoCollection[i].clickY, undoCollection[i].clickColor, undoCollection[i].italicStyle, undoCollection[i].boldStyle, undoCollection[i].fontThickness, undoCollection[i].text);
+            } else if (undoCollection[i].clickTool === "cursor") {
+                drawImage(undoCollection[i].image, undoCollection[i].clickX, undoCollection[i].clickY);
+            } else if (undoCollection[i].clickTool === "clear") {
+                //never comes to this case
+                continue;
+            } else {
+                context.beginPath();
+                if (undoCollection[i].clickDrag && i) {
+                    context.moveTo(undoCollection[i - 1].clickX, undoCollection[i - 1].clickY);
+                } else {
+                    // The x position is moved over one pixel so a circle even if not dragging
+                    context.moveTo(undoCollection[i].clickX - 1, undoCollection[i].clickY);
+                }
+                context.lineTo(undoCollection[i].clickX, undoCollection[i].clickY);
+
+                // Set the drawing color
+                if (undoCollection[i].clickTool === "eraser") {
+                    //context.globalCompositeOperation = "destination-out"; // To erase instead of draw over with white
+                    context.strokeStyle = 'white';
+                } else {
+                    //context.globalCompositeOperation = "source-over";    // To erase instead of draw over with white
+                    context.strokeStyle = undoCollection[i].clickColor;
+                }
+                context.lineCap = "round";
+                context.lineJoin = "round";
+                context.lineWidth = undoCollection[i].clickThickness;
+                context.stroke();
+                context.closePath();
+            }
+
+        }
+
+
+
+    }
+
+
+    function getRelativeTop(top) {
+        return top - $j('#canvasDiv' + id).offset().top;
+    }
+
+    function getRelativeLeft(left) {
+        return left - $j('#canvasDiv' + id).offset().left;
+    }
 
     this.createMarker = function(identification, x, y, text, stat) {
         var annotationId = "marker" + id + ancount;
@@ -308,9 +513,9 @@ function DrawingEditor(randomId) {
         var annDivData = "<img src='" + close + "' style='float:right' onClick='$j(this).parent().parent().fadeOut(500)'/><span style='background-color:white'>" + text + "</span></br><span><a class='link move'> Move </a> <a  class='edit link'> Edit </a> <a class='link delete'> Delete </a></span>";
         var v = '<div class="container"><div style="position:absolute;z-index:5;display:none"><div id="' + annotationId + '_data" class="divContainerDown">' + annDivData + '</div><div class="calloutDown"><div class="calloutDown2"></div></div></div>';
         $j('#canvasDiv' + id).append(v + '<img id="' + annotationId + '" src="' + redDot + '" style="top:' + y + 'px;left:' + x + 'px;position:absolute;z-index:4"/></div>');
-        
+
         setHandlers($j('#' + annotationId + '_data'));
-		$j('#' + annotationId).click(function(event) {
+        $j('#' + annotationId).click(function(event) {
             $j('#' + annotationId + '_data').parent().css('top', getRelativeTop(event.pageY) - $j('#' + annotationId + '_data').parent().height());
             $j('#' + annotationId + '_data').parent().css('left', getRelativeLeft(event.pageX) - $j('#' + annotationId + '_data').parent().width() / 8 - 5);
             $j('#' + annotationId + '_data').parent().fadeIn(500);
@@ -348,12 +553,11 @@ function DrawingEditor(randomId) {
             status: 'CHANGED'
         };
         else {
-		     if(!(typeof s === 'undefined'))
-            annotationsCollection[$j(v).attr('id')].data = s;
+            if (!(typeof s === 'undefined')) annotationsCollection[$j(v).attr('id')].data = s;
             annotationsCollection[$j(v).attr('id')].position = $j(v).parent().parent().children('img').position();
             annotationsCollection[$j(v).attr('id')].status = 'CHANGED';
         }
-		var changedHtml = "<img src='" + close + "' style='float:right' onClick='$j(this).parent().parent().fadeOut(500)'/><span style='background-color:white'>" + annotationsCollection[$j(v).attr('id')].data + "</span></br><span><a class='link move'> Move </a> <a  class='edit link'> Edit </a> <a class='link delete'> Delete </a></span>";
+        var changedHtml = "<img src='" + close + "' style='float:right' onClick='$j(this).parent().parent().fadeOut(500)'/><span style='background-color:white'>" + annotationsCollection[$j(v).attr('id')].data + "</span></br><span><a class='link move'> Move </a> <a  class='edit link'> Edit </a> <a class='link delete'> Delete </a></span>";
         $j(v).html(changedHtml);
         setHandlers(v);
         placeMarker(v);
@@ -375,56 +579,54 @@ function DrawingEditor(randomId) {
 
     function moveOnClick(v) {
         var changedHtml = "<img src='" + close + "' style='float:right' onClick='$j(this).parent().parent().fadeOut(500)'/><span style='background-color:white'>place it here ?</span></br><span><a class='link save'> Save </a> <a  class='resetAfterCancel link'> Cancel </a></span>";
-        $j(v).parent().parent().children('img').attr('src',blueDot);
-		$j(v).parent().hide();
-		$j(v).html(changedHtml);
-		$j(v).children('span:last').children('.save').click(function() {
+        $j(v).parent().parent().children('img').attr('src', blueDot);
+        $j(v).parent().hide();
+        $j(v).html(changedHtml);
+        $j(v).children('span:last').children('.save').click(function() {
             saveAnnotation($j(this).parent().parent());
         });
         $j(v).children('span:last').children('.resetAfterCancel').click(function() {
             resetAfterCancel($j(this).parent().parent());
         });
-        
-        $j(v).parent().parent().children('img').draggable(
-			{
-				zIndex: 	4,
-				containment : '#canvasDiv'+id,
-				start: function(event, ui) { 
-				    var calloutId=$j(this).attr('id')+'_data';
-					$j('#'+calloutId).parent().hide();
-				},
-				stop: function(event, ui) { 
-				    var calloutId=$j(this).attr('id')+'_data';
-					setCallOut(this);
-					$j('#'+calloutId).parent().show();
-				}
-			});
+
+        $j(v).parent().parent().children('img').draggable({
+            zIndex: 4,
+            containment: '#canvasDiv' + id,
+            start: function(event, ui) {
+                var calloutId = $j(this).attr('id') + '_data';
+                $j('#' + calloutId).parent().hide();
+            },
+            stop: function(event, ui) {
+                var calloutId = $j(this).attr('id') + '_data';
+                setCallOut(this);
+                $j('#' + calloutId).parent().show();
+            }
+        });
     }
-	
-	function setCallOut(image)
-	{
-	    var imageId=$j(image).attr('id');
-	    $j('#' + imageId + '_data').parent().css('top', $j(image).position().top - $j('#' + imageId + '_data').parent().height());
-            $j('#' + imageId + '_data').parent().css('left', $j(image).position().left+$j(image).width()/2 - $j('#' + imageId + '_data').parent().width() / 8 - 5);
-	}
-	
-	function placeMarker(v){
-		var marker=$j(v).parent().parent().children('img');
-		marker.attr('style','top:'+Math.round(annotationsCollection[$j(v).attr('id')].position.top)+'px;left:'+Math.round(annotationsCollection[$j(v).attr('id')].position.left)+'px;position:absolute;z-index:4');
-		marker.attr('src',redDot);
-	    marker.draggable( 'destroy' );
-	}
+
+    function setCallOut(image) {
+        var imageId = $j(image).attr('id');
+        $j('#' + imageId + '_data').parent().css('top', $j(image).position().top - $j('#' + imageId + '_data').parent().height());
+        $j('#' + imageId + '_data').parent().css('left', $j(image).position().left + $j(image).width() / 2 - $j('#' + imageId + '_data').parent().width() / 8 - 5);
+    }
+
+    function placeMarker(v) {
+        var marker = $j(v).parent().parent().children('img');
+        marker.attr('style', 'top:' + Math.round(annotationsCollection[$j(v).attr('id')].position.top) + 'px;left:' + Math.round(annotationsCollection[$j(v).attr('id')].position.left) + 'px;position:absolute;z-index:4');
+        marker.attr('src', redDot);
+        marker.draggable('destroy');
+    }
 
 
     function resetAfterCancel(k) {
-        var changedHtml = "<img src='" + close + "' style='float:right' onClick='$j(this).parent().parent().fadeOut(500)'/><span style='background-color:white'>" +annotationsCollection[$j(k).attr('id')].data + "</span></br><span><a class='link move'> Move </a> <a  class='edit link'> Edit </a> <a class='link delete'> Delete </a></span>";
+        var changedHtml = "<img src='" + close + "' style='float:right' onClick='$j(this).parent().parent().fadeOut(500)'/><span style='background-color:white'>" + annotationsCollection[$j(k).attr('id')].data + "</span></br><span><a class='link move'> Move </a> <a  class='edit link'> Edit </a> <a class='link delete'> Delete </a></span>";
         $j(k).html(changedHtml);
         setHandlers(k);
-		placeMarker(k);
-		$j(k).parent().hide();
+        placeMarker(k);
+        $j(k).parent().hide();
     }
-	
-	
+
+
 
     function setHandlers(v) {
         $j(v).children('span:last').children('.edit').click(function() {
@@ -494,15 +696,21 @@ function DrawingEditor(randomId) {
         $j('#encodedImage' + id).val(canvas.toDataURL());
     }
 
+    function writeText(x, y, color, italicStyle, boldStyle, fontThickness, text) {
+        context.strokeStyle = "rgba(237,229,0,1)";
+        context.fillStyle = color;
+        context.font = italicStyle + ' ' + boldStyle + ' ' + fontThickness + 'px ' + font;
+        context.fillText(text, x, y);
+
+    }
+
     function saveTextFromArea(x, y) {
         //get the value of the textarea 
+        addClick(x, y, false, selectedTool);
         var text = $j('textarea#writableTextarea' + id).val();
         $j('textarea#writableTextarea' + id).val('');
         removeTextAreaPopup();
-        context.strokeStyle = "rgba(237,229,0,1)";
-        context.fillStyle = selectedColor;
-        context.font = italic + ' ' + bold + ' ' + fontSize + 'px ' + font;
-        context.fillText(text, x, y);
+        writeText(x, y, selectedColor, italic, bold, fontSize, text);
     };
 
 

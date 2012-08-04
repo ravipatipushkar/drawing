@@ -26,6 +26,7 @@ import org.springframework.validation.ValidationUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class DrawingWindowController {
@@ -55,6 +56,7 @@ public class DrawingWindowController {
 			ValidationUtils.invokeValidator(new ObsValidator(), o, obsErrors);
 			if (!obsErrors.hasErrors()) {
 				Context.getObsService().saveObs(o, "saving obs");
+				request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ATTR, "drawing.saved");
 			} else {
 				obsErrors.getFieldErrors();
 				String s = "";
@@ -89,6 +91,21 @@ public class DrawingWindowController {
 		Context.getObsService().saveObs(obs, "saving obs");
 		
 		return "redirect:/module/drawing/manage.form?obsId=" + obs.getId();
+	}
+	
+	@RequestMapping(value = "/module/drawing/getTemplate", method = RequestMethod.GET)
+	public @ResponseBody
+	String getTemplates(@RequestParam(value="templateName",required=true)String templateName) {
+		String encodedImage=null;
+		try {
+	         encodedImage= DrawingUtil.getTemplateAsBase64ByName(templateName);
+        }
+        catch (IOException e) {
+	        log.error("unable to get the file", e);
+        }
+		
+		return encodedImage;
+		
 	}
 	
 }

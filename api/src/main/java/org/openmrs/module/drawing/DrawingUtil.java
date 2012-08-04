@@ -16,9 +16,11 @@ package org.openmrs.module.drawing;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
@@ -28,31 +30,50 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
+import org.openmrs.util.OpenmrsUtil;
 
 /**
  *
  */
 public class DrawingUtil {
 	
+	private static final String drawingDirectory = "DrawingTemplates";
+	
 	private static Log log = LogFactory.getLog(DrawingUtil.class);
 	
 	public static String imageToBase64(BufferedImage img) throws IOException {
+		
+		return imageToBase64(img, null);
+	}
+	
+	public static String imageToBase64(BufferedImage img, String extension) throws IOException {
 		String encodedImage = null;
+		if (StringUtils.isBlank(extension))
+			extension = "png";
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
-			
-			ImageIO.write(img, "png", baos);
-			encodedImage = "data:image/png;base64," + Base64.encodeBase64String(baos.toByteArray());
-			
+			ImageIO.write(img, extension, baos);
+			encodedImage = "data:image/" + extension + ";base64," + Base64.encodeBase64String(baos.toByteArray());
 		}
 		catch (Exception e) {
 			log.error("cannot write image", e);
-			
 		}
 		finally {
 			baos.close();
 		}
 		return encodedImage;
+	}
+	
+	public static String imageToBase64(File file) throws IOException {
+		
+		String extension = getExtension(file.getName());
+		if (isImage(file.getName()) && !extension.equals("raw")) {
+			BufferedImage bi = ImageIO.read(file);
+			return imageToBase64(bi, extension);
+		}
+		
+		return null;
+		
 	}
 	
 	public static BufferedImage base64ToImage(String base64Data) throws IOException {
@@ -97,4 +118,71 @@ public class DrawingUtil {
 		}
 		return annotations.toArray(new ImageAnnotation[0]);
 	}
+	
+	public static List<File> getTemplates() {
+		
+		File folder = getDrawingDirectory();
+		List<File> templates = new ArrayList<File>();
+		if (folder.list().length == 0) {
+			//Add files from module resources
+		}
+		for (File f : folder.listFiles()) {
+			if (f.isFile() && isImage(f.getName()))
+				templates.add(f);
+			
+		}
+		
+		return templates;
+		
+	}
+	
+	public static File getDrawingDirectory(){
+		File file = OpenmrsUtil.getDirectoryInApplicationDataDirectory(drawingDirectory);
+		if(file.list().length == 0){
+			loadDefaultTemplates(file);
+			return file;
+		}else
+			return file;
+	}
+	
+	public static void loadDefaultTemplates(File file){
+		
+		
+	}
+	
+	public static String getTemplateAsBase64ByName(String name) throws IOException{
+		 
+		File file = new File(getDrawingDirectory(),name);
+		if (!file.exists()){
+			log.error("unable to find the file");
+			return null;
+		}else
+         return imageToBase64(file);
+         
+	}
+	
+	public static boolean isImage(String fileName) {
+		String extension = getExtension(fileName);
+		if (extension.toUpperCase().equals("JPG") || extension.toUpperCase().equals("PNG")
+		        || extension.toUpperCase().equals("JPEG"))
+			return true;
+		else
+			return false;
+	}
+	
+	public static String getExtension(String filename) {
+		String[] filenameParts = filename.split("\\.");
+		
+		log.debug("titles length: " + filenameParts.length);
+		
+		String extension = (filenameParts.length < 2) ? filenameParts[0] : filenameParts[filenameParts.length - 1];
+		extension = (null != extension && !"".equals(extension)) ? extension : "raw";
+		
+		return extension;
+	}
+	public static String[] getAllTemplateNames(){
+		File dir=getDrawingDirectory();
+		return dir.list();
+	}
+	
 }
