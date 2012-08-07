@@ -18,7 +18,6 @@ function DrawingEditor(randomId) {
     var blueDot = openmrsContextPath + "/moduleResources/drawing/blue-dot.png";
     var redDot = openmrsContextPath + "/moduleResources/drawing/red-dot.png";
     var close = openmrsContextPath + "/moduleResources/drawing/close.gif";
-    var loading = openmrsContextPath + "/moduleResources/drawing/loading.gif";
     var annotationsCollection = {};
     var formId = 'saveImageForm' + id;
     var submit = true;
@@ -62,11 +61,14 @@ function DrawingEditor(randomId) {
 
         var canvasDiv = document.getElementById('canvasDiv' + id);
         canvas = document.createElement('canvas');
+		//alert($j(canvasDiv).width());
         canvasWidth = $j(canvasDiv).width() - 20;
         canvasHeight = 500;
-
+        //alert($j(canvasDiv).width());
         $j(canvas).attr('width', canvasWidth).attr('height', canvasHeight).attr('id', 'canvas' + id);
+		//alert($j(canvasDiv).width());
         canvasDiv.appendChild(canvas);
+		//alert($j(canvasDiv).width());
         context = canvas.getContext("2d");
         $j('#encodedImage' + id).val(canvas.toDataURL());
         $j(canvas).mousedown(function(event) {
@@ -106,6 +108,14 @@ function DrawingEditor(randomId) {
                 $j('#writableTextarea' + id).css('color', selectedColor);
             }
         });
+		
+		
+		$j('#drawingTab').click(function(){
+		  if($j(canvas).width() < $j('#canvasDiv'+id).width()-20){
+			  canvas.width=$j('#canvasDiv'+id).width()-20;
+		}
+		});
+		
         $j("#fontSlider" + id).slider({
             value: 25,
             change: function(event, ui) {
@@ -256,6 +266,7 @@ function DrawingEditor(randomId) {
         $j('#doneMoving' + id).click(function() {
             $j('.tool').show();
             $j('.dependendTool').hide();
+            
             $j(this).hide();
             $j('#pencilDiv' + id).trigger('click');
             if (currentLoadedImage != null) {
@@ -287,12 +298,16 @@ function DrawingEditor(randomId) {
 
         $j('#undoDiv' + id).mousedown(function() {
             $j(this).addClass("highlight");
-            if (undoCollection.length > 0) {
+			var v=parseInt($j('#undoRedoRate'+id).val().split('x',1));
+            for	(var i=0;i<=v;i++)	{
+            if (undoCollection.length <= 0) 
+			    break;
                 redoCollection.push(undoCollection.pop());
-                clearCanvas();
-                reDraw();
-            }
+			}
+			clearCanvas();
+			reDraw();
         });
+		
         $j('#undoDiv' + id).mouseup(function() {
             $j(this).removeClass("highlight");
         });
@@ -300,30 +315,38 @@ function DrawingEditor(randomId) {
         //console.log( v.clickX+'   '+v.clickY+'   '+v.clickTool+"   "+v.clickColor+"   "+v.clickThickness+"   "+v.clickDrag);
         $j('#redoDiv' + id).mousedown(function() {
             $j(this).addClass("highlight");
-            if (redoCollection.length > 0) undoCollection.push(redoCollection.pop());
-            clearCanvas();
-            reDraw();
+			var v=parseInt($j('#undoRedoRate'+id).val().split('x',1));
+            for	(var i=0;i<=v;i++)	{
+            if (redoCollection.length <= 0) 
+			      break;
+                undoCollection.push(redoCollection.pop());
+			}
+			clearCanvas();
+			reDraw();
         });
-        $j('.templateImage').click(function() {
+		
+		$j('#redoDiv' + id).mouseup(function() {
+            $j(this).removeClass("highlight");
+        });
+		
+        $j('#templateImage'+id).click(function() {
+        	
             drawMovableImage(this);
             $j('#templatesDialog' + id).dialog('close');
 
         });
 
-        $j('.templateName span').click(function() {
-            // alert($j(this).html());
+        $j('.templateName').click(function() {
             $j.get(openmrsContextPath + "/module/drawing/getTemplate.form?templateName=" + $j(this).html(), function(data) {
-                //alert('got data'+data);
-                $j('.templateImage').attr('src', data);
+                $j('#templateImage'+id).attr('src', data);
             }).error(function() {
-                alert('Unable load Templates');
-            }).success(function() {
-                //  alert('success');
-            }).complete(function() {
-                // alert('complete');
+                alert('Unable load Template');
             });
 
-        })
+        });
+        
+        
+		
         $j('.templateName').hover(function() {
             $j(this).css({
                 color: '#1AAD9B'
@@ -343,20 +366,16 @@ function DrawingEditor(randomId) {
             modal: true,
             resizable: false,
             draggable: false,
-            width: 800,
-            //maxWidth: 600,
-            height: 400,
+            width: 1000,
+            height: 500,
             buttons: {
                 "Cancel": function() {
                     $j(this).dialog("close");
                 }
             }
         });
-
-
-        $j('#redoDiv' + id).mouseup(function() {
-            $j(this).removeClass("highlight");
-        });
+        
+        $j('#annotationsVisibility'+id).toggle(hideAnnotations,showAnnotations);
 
         $j('#canvasDiv' + id).dblclick(function(event) {
             clickX = getRelativeLeft(event.pageX) - 9;
@@ -389,6 +408,16 @@ function DrawingEditor(randomId) {
 
 
     };
+    
+    function showAnnotations(){
+    	$j('#annotationsVisibility'+id).html('Hide Annotations');
+    	$j('.container'+id).show();
+    }
+    
+    function hideAnnotations(){
+    	$j('#annotationsVisibility'+id).html('Show Annotations');
+    	$j('.container'+id).hide();
+    }
 
     function addClick(x, y, dragging, tool) {
         redoCollection = [];
@@ -402,7 +431,7 @@ function DrawingEditor(randomId) {
                 clickDrag: dragging,
                 italicStyle: italic,
                 boldStyle: bold,
-                text: $j('textarea#writableTextarea' + id).val()
+                text: $j('textarea #writableTextarea' + id).val()
             });
         } else if (tool === "cursor") {
             undoCollection.push({
@@ -444,7 +473,7 @@ function DrawingEditor(randomId) {
     function prepareForImageMoving() {
         $j('#cursorDiv' + id).trigger('click');
         $j('.tool').hide();
-        $j('#doneMoving').show();
+        $j('#doneMoving'+id).show();
     }
 
     function getLastClearIndex() {
@@ -511,7 +540,7 @@ function DrawingEditor(randomId) {
         var annotationId = "marker" + id + ancount;
         ancount++;
         var annDivData = "<img src='" + close + "' style='float:right' onClick='$j(this).parent().parent().fadeOut(500)'/><span style='background-color:white'>" + text + "</span></br><span><a class='link move'> Move </a> <a  class='edit link'> Edit </a> <a class='link delete'> Delete </a></span>";
-        var v = '<div class="container"><div style="position:absolute;z-index:5;display:none"><div id="' + annotationId + '_data" class="divContainerDown">' + annDivData + '</div><div class="calloutDown"><div class="calloutDown2"></div></div></div>';
+        var v = '<div class="container'+id+'"><div style="position:absolute;z-index:5;display:none"><div id="' + annotationId + '_data" class="divContainerDown">' + annDivData + '</div><div class="calloutDown"><div class="calloutDown2"></div></div></div>';
         $j('#canvasDiv' + id).append(v + '<img id="' + annotationId + '" src="' + redDot + '" style="top:' + y + 'px;left:' + x + 'px;position:absolute;z-index:4"/></div>');
 
         setHandlers($j('#' + annotationId + '_data'));
@@ -536,6 +565,8 @@ function DrawingEditor(randomId) {
         var imageObj = new Image();
         imageObj.onload = function() {
             drawImage(imageObj, 0, 0);
+            imageCollection.push(imageObj);
+			addClick(0,0,false,'cursor');
             var dataUrl = canvas.toDataURL();
             $j('#encodedImage' + id).val(dataUrl);
 

@@ -13,20 +13,17 @@
  */
 package org.openmrs.module.drawing.web.controller;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Obs;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.drawing.AnnotatedImage;
-import org.openmrs.web.WebConstants;
+import org.openmrs.module.drawing.DrawingUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,31 +47,19 @@ public class DrawingManageController {
 				log.error("obs is not complex ");
 			} else {
 				AnnotatedImage ai = (AnnotatedImage) obs.getComplexData().getData();
-				//String encodedImage = "/" + WebConstants.WEBAPP_NAME + "/complexObsServlet?obsId=" + obs.getId();
-				
-				String encodedImage=encodeComplexData(ai.getImage());
-				model.addAttribute("encodedImage", encodedImage);
+				String encodedImage;
+				try {
+					encodedImage = DrawingUtil.imageToBase64(ai.getImage());
+					model.addAttribute("encodedImage", encodedImage);
+				}
+				catch (IOException e) {
+					log.error("Error generated", e);
+				}
 				model.addAttribute("annotations", ai.getAnnotations());
 				model.addAttribute("obsId", obs.getId());
+				
 			}
 		}
-		model.addAttribute("user", Context.getAuthenticatedUser());
-		
-	}
-	
-	public String encodeComplexData(Object o) {
-		String encodedImage = null;
-		try {
-			BufferedImage img = (BufferedImage) o;
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			ImageIO.write(img, "png", baos);
-			encodedImage = "data:image/png;base64," + Base64.encodeBase64String(baos.toByteArray());
-		}
-		catch (Exception e) {
-			log.error("cannot write image", e);
-			
-		}
-		return encodedImage;
 	}
 	
 }

@@ -18,7 +18,18 @@
   		    http://www.springframework.org/schema/util/spring-util-3.0.xsd">
 
 	<!-- Add here beans related to the API context -->
-
+	<bean id="drawingWindowPortletController" class="org.openmrs.module.drawing.web.controller.DrawingWindowPortletController">
+    </bean>
+    <bean id="basicmoduleUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+    	<property name="order"><value>50</value></property>
+    	<property name="mappings">
+            <props>
+	           <prop key="**/drawingWindow.portlet">drawingWindowPortletController</prop>
+	    	</props>
+		</property>
+    </bean>
+    
+    
  
     <bean parent="obsServiceTarget" >
         <property name="handlers">

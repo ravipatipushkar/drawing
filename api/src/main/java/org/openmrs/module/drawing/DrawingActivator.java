@@ -15,7 +15,11 @@ package org.openmrs.module.drawing;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.ModuleActivator;
+import org.openmrs.module.ModuleFactory;
+import org.openmrs.module.drawing.handlers.DrawingTagHandler;
+import org.openmrs.module.htmlformentry.HtmlFormEntryService;
 
 /**
  * This class contains the logic that is run every time this module is either started or stopped.
@@ -53,7 +57,7 @@ public class DrawingActivator implements ModuleActivator {
 	 */
 	public void started() {
 		log.info("Drawing Module started");
-	/*	if (ModuleFactory.isModuleStarted("htmlformentry")) {
+	if (ModuleFactory.isModuleStarted("htmlformentry")) {
 			try {
 				
 				HtmlFormEntryService hfes = Context.getService(HtmlFormEntryService.class);
@@ -67,7 +71,7 @@ public class DrawingActivator implements ModuleActivator {
 				
 			}
 			
-		}*/
+		}
 		
 	}
 	

@@ -20,32 +20,44 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
+import org.openmrs.util.OpenmrsClassLoader;
 import org.openmrs.util.OpenmrsUtil;
 
 /**
- *
+ *  Drawing utility methods
  */
 public class DrawingUtil {
 	
-	private static final String drawingDirectory = "DrawingTemplates";
-	
 	private static Log log = LogFactory.getLog(DrawingUtil.class);
 	
+	
+	/** 
+	 *  @param an image
+	 *  @return String containing Base64 encoded image/null if there is a problem in encoding
+	 *  @throws IOException
+	 */
 	public static String imageToBase64(BufferedImage img) throws IOException {
 		
 		return imageToBase64(img, null);
 	}
 	
+	
+	/**
+	 *  @param  an image
+	 *  @param  String containing the extension of image
+	 *  @return String containing Base64 encoded image/null if there is a problem in encoding
+	 *  @throws IOException
+	 */
 	public static String imageToBase64(BufferedImage img, String extension) throws IOException {
 		String encodedImage = null;
 		if (StringUtils.isBlank(extension))
@@ -53,7 +65,8 @@ public class DrawingUtil {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
 			ImageIO.write(img, extension, baos);
-			encodedImage = "data:image/" + extension + ";base64," + Base64.encodeBase64String(baos.toByteArray());
+			encodedImage = "data:image/" + extension.toLowerCase() + ";base64,"
+			        + Base64.encodeBase64String(baos.toByteArray());
 		}
 		catch (Exception e) {
 			log.error("cannot write image", e);
@@ -64,6 +77,14 @@ public class DrawingUtil {
 		return encodedImage;
 	}
 	
+	
+	
+	/**
+	 *  @param  an image
+	 *  @param  String containing the extension of image
+	 *  @return String containing Base64 encoded image/null if there is a problem in encoding
+	 *  @throws IOException
+	 */
 	public static String imageToBase64(File file) throws IOException {
 		
 		String extension = getExtension(file.getName());
@@ -75,6 +96,13 @@ public class DrawingUtil {
 		return null;
 		
 	}
+	/**
+	 *  Converts a Base64 String to image 
+	 * @param base64Data
+	 * @return image
+	 * @throws IOException
+	 */
+
 	
 	public static BufferedImage base64ToImage(String base64Data) throws IOException {
 		
@@ -98,6 +126,12 @@ public class DrawingUtil {
 		return img;
 		
 	}
+	/**
+	 * @param request
+	 * @param id
+	 * @return array of annotations 
+	 */
+	
 	
 	public static ImageAnnotation[] getAnnotations(HttpServletRequest request, String id) {
 		if (id == null)
@@ -118,58 +152,67 @@ public class DrawingUtil {
 		}
 		return annotations.toArray(new ImageAnnotation[0]);
 	}
-	
-	public static List<File> getTemplates() {
-		
-		File folder = getDrawingDirectory();
-		List<File> templates = new ArrayList<File>();
-		if (folder.list().length == 0) {
-			//Add files from module resources
-		}
-		for (File f : folder.listFiles()) {
-			if (f.isFile() && isImage(f.getName()))
-				templates.add(f);
-			
-		}
-		
-		return templates;
-		
-	}
-	
-	public static File getDrawingDirectory(){
-		File file = OpenmrsUtil.getDirectoryInApplicationDataDirectory(drawingDirectory);
-		if(file.list().length == 0){
+	/**
+	 * @return the directory specified in {@link DrawingConstants#DRAWINGDIRECTORY}
+	 */
+	public static File getDrawingDirectory() {
+		File file = OpenmrsUtil.getDirectoryInApplicationDataDirectory(DrawingConstants.DRAWINGDIRECTORY);
+		if (!file.exists() || file.list(new ExtensionFilter()).length == 0) {
 			loadDefaultTemplates(file);
 			return file;
-		}else
+		} else
 			return file;
 	}
 	
-	public static void loadDefaultTemplates(File file){
+	private static void loadDefaultTemplates(File file)  {
+		try {
+	        String s=OpenmrsClassLoader.getInstance().getResource(DrawingConstants.DRAWINGDIRECTORY).getPath();
+	        File f=new File(s);
+	         FileUtils.copyDirectory(f, file);
+        }
+        catch (Exception e) {
+			log.error("Unable to copy templates from resources to app directory", e);
+        }
 		
 		
 	}
 	
-	public static String getTemplateAsBase64ByName(String name) throws IOException{
-		 
-		File file = new File(getDrawingDirectory(),name);
-		if (!file.exists()){
-			log.error("unable to find the file");
+	
+	/**
+	 *  encodes the of the contents of file using Base64 encoder
+	 *  @param  filename
+	 *  @return String containing Base64 encoding of file. if file does not exist ,null
+	 */
+	public static String getTemplateAsBase64ByName(String name) throws IOException {
+		File file = new File(getDrawingDirectory(), name);
+		if (!file.exists()) {
+			log.error("File does not exist");
 			return null;
-		}else
-         return imageToBase64(file);
-         
+		} else
+			return imageToBase64(file);
+		
 	}
 	
+	
+	/**
+	 *   Checks if the file has one of the extensions defined in {@link DrawingConstants#ACCEPTDEXTENSIONS}
+	 *  @param  filename
+	 *  @return boolean
+	 */
 	public static boolean isImage(String fileName) {
 		String extension = getExtension(fileName);
-		if (extension.toUpperCase().equals("JPG") || extension.toUpperCase().equals("PNG")
-		        || extension.toUpperCase().equals("JPEG"))
-			return true;
-		else
-			return false;
+		for (String s : DrawingConstants.ACCEPTDEXTENSIONS)
+			if (extension.toUpperCase().equals(s))
+				return true;
+		
+		return false;
 	}
 	
+	
+	/**
+	 *  @param  filename
+	 *  @return the extension of file otherwise "raw"
+	 */
 	public static String getExtension(String filename) {
 		String[] filenameParts = filename.split("\\.");
 		
@@ -180,9 +223,42 @@ public class DrawingUtil {
 		
 		return extension;
 	}
-	public static String[] getAllTemplateNames(){
-		File dir=getDrawingDirectory();
-		return dir.list();
+	
+	
+	/**
+	 *  @return Names off all the files with extensions defined in {@link DrawingConstants#ACCEPTDEXTENSIONS}
+	 */
+	public static String[] getAllTemplateNames() {
+		File dir = getDrawingDirectory();
+		return dir.list(new ExtensionFilter());
+	}
+	
+	/**
+	 *  @param  name of the file
+	 *  @param  Image to be saved
+	 *  @return true if file is saved other wise false
+	 */
+	public static Boolean saveFile(String name, BufferedImage bi) {
+		File f = new File(getDrawingDirectory(), name);
+		Boolean saved = false;
+		try {
+			saved = ImageIO.write(bi, getExtension(name), f);
+		}
+		catch (IOException e) {
+			log.error("Unable to Save File", e);
+		}
+		return saved;
+	}
+	
+	
+	/**
+	 *  @param  name of the file to be deleted
+	 *  @return returns true if file is deleted else false
+	 */
+	public static Boolean deleteTemplate(String name) {
+		File f = new File(getDrawingDirectory(), name);
+		Boolean deleted = f.exists() ? f.delete() : true;
+		return deleted;
 	}
 	
 }

@@ -1,8 +1,33 @@
 package org.openmrs.module.drawing.elements;
 
-public class DrawingSubmissionElement {
-	//public class DrawingSubmissionElement implements HtmlGeneratorElement, FormSubmissionControllerAction {
-	/*
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openmrs.Concept;
+import org.openmrs.Obs;
+import org.openmrs.api.context.Context;
+import org.openmrs.module.drawing.AnnotatedImage;
+import org.openmrs.module.drawing.DrawingUtil;
+import org.openmrs.module.drawing.ImageAnnotation;
+import org.openmrs.module.htmlformentry.FormEntryContext;
+import org.openmrs.module.htmlformentry.FormEntryContext.Mode;
+import org.openmrs.module.htmlformentry.FormEntrySession;
+import org.openmrs.module.htmlformentry.FormSubmissionError;
+import org.openmrs.module.htmlformentry.HtmlFormEntryUtil;
+import org.openmrs.module.htmlformentry.action.FormSubmissionControllerAction;
+import org.openmrs.module.htmlformentry.element.HtmlGeneratorElement;
+import org.openmrs.obs.ComplexData;
+import org.openmrs.web.WebConstants;
+
+//public class DrawingSubmissionElement {
+	public class DrawingSubmissionElement implements HtmlGeneratorElement, FormSubmissionControllerAction {
+	
 	private static final Log log = LogFactory.getLog(DrawingSubmissionElement.class);
 	
 	private String id;
@@ -77,7 +102,7 @@ public class DrawingSubmissionElement {
 			        + "/moduleResources/drawing/drawingHtmlForm.css' />");
 			sb.append("<script type='text/javascript'>var ancount"
 			        + id
-			        + "=0;    var redDot ='/openmrstru/moduleResources/drawing/images/red-dot.png';var close = '/openmrstru/moduleResources/drawing/close.gif';function createMarker"
+			        + "=0;    var redDot ='/openmrstru/moduleResources/drawing/red-dot.png';var close = '/openmrstru/moduleResources/drawing/close.gif';function createMarker"
 			        + id
 			        + "(identification, x, y, text, stat) {var annotationId = \"marker"
 			        + id
@@ -138,48 +163,112 @@ public class DrawingSubmissionElement {
 			sb.append("v" + id + ".setSubmit(false);v" + id + ".setFormId('htmlform');}); </script>");
 			sb.append("<div class='editorContainer'>");
 			sb.append("<div id='drawingHeader'>");
-			sb.append("<div id='cursorDiv" + id + "' class='iconDiv'><img id='cursor' src='/" + WebConstants.WEBAPP_NAME
-			        + "/moduleResources/drawing/images/cursor_icon.png' alt='cursor' class='imageprop' /></div>");
-			
-			sb.append("<div id='pencilDiv" + id + "' class='iconDiv'><img id='pencil' src='/" + WebConstants.WEBAPP_NAME
-			        + "/moduleResources/drawing/images/pencil_icon.png' alt='pencil' class='imageprop' /></div>");
-			sb.append("<div id='eraserDiv" + id + "' class='iconDiv'><img id='eraser' src='/" + WebConstants.WEBAPP_NAME
-			        + "/moduleResources/drawing/images/eraser_icon.png' alt='eraser' class='imageprop' /></div>");
-			sb.append("<div id='textDiv" + id + "' class='iconDiv'><img id='text' src='/" + WebConstants.WEBAPP_NAME
-			        + "/moduleResources/drawing/images/text_icon.png' alt='text' class='imageprop' /></div>");
-			sb.append("<div id='fontpropertiesDiv"
+			sb.append("<div id='cursorDiv"
 			        + id
-			        + "' style='display: none;float: left;margin-left: 5px' ><div id='boldDiv"
+			        + "' class='iconDiv tool'><img id='cursor' src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/cursor_icon.png' alt='cursor' class='imageprop' /></div>");
+			sb.append("<div id='doneMoving" + id
+			        + "' class='iconDiv' style='display:none;color:#000000;cursor: pointer'>Done Moving</div>");
+			sb.append("<div id='pencilDiv"
 			        + id
-			        + "' class='iconDiv'><img src='/"
-			        + WebConstants.WEBAPP_NAME
-			        + "/moduleResources/drawing/images/bold_icon.png' alt='bold' class='imageprop' /></div><div id='italicDiv"
+			        + "' class='iconDiv tool'><img id='pencil' src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/pencil_icon.png' alt='pencil' class='imageprop' /></div>");
+			sb.append("<div id='eraserDiv"
 			        + id
-			        + "' class='iconDiv'><img src='/"
-			        + WebConstants.WEBAPP_NAME
-			        + "/moduleResources/drawing/images/italic_icon.png' alt='italic'  class='imageprop'/></div><div class='selection'><div style='float:left'>Font Size:</div><div id='fontSlider"
-			        + id + "' style='width:100px;float:right'></div></div></div>");
-			sb.append("<div id='thicknessDiv"
+			        + "' class='iconDiv tool'><img id='eraser' src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/eraser_icon.png' alt='eraser' class='imageprop' /></div>");
+			sb.append("<div id='textDiv"
 			        + id
-			        + "' style='display: none;float: left;margin-left: 5px' ><div class='selection'><div style='float:left'>Thickness:</div><div id='thicknessSlider"
-			        + id + "' style='width:100px;float:right'></div></div></div>");
-			sb.append("<div id='colorSelector" + id
-			        + "' style='float: left' class='colorselector'><div class='colorselector_innerdiv'></div></div>");
-			sb.append("<div style='clear:both;'></div>");
+			        + "' class='iconDiv tool'><img id='text' src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/text_icon.png' alt='text' class='imageprop' /></div>");
+			sb.append("<div id='fontpropertiesDiv" + id
+			        + "' class='tool dependendTool' style='display: none;float: left;margin-left: 5px' >");
+			sb.append("<div id='boldDiv"
+			        + id
+			        + "' class='iconDiv'><img src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/bold_icon.png' alt='bold' class='imageprop' /></div>");
+			sb.append("<div id='italicDiv"
+			        + id
+			        + "' class='iconDiv'><img src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/italic_icon.png' alt='italic'  class='imageprop'/></div>");
+			sb.append("<div class='selection' >");
+			sb.append("<div style='float:left'>Font Size:</div><div id='fontSlider" + id
+			        + "' style='width:100px;float:right'></div>");
 			sb.append("</div>");
-			sb.append("<div id='canvasDiv" + id + "' class='canvasDiv'></div>");
-			sb.append("<div id='textAreaPopUp" + id
-			        + "' style='position:absolute;display:none;z-index:1;'><textarea id='writableTextarea" + id
-			        + "' style='width:100px;height:50px;'></textarea><input type='button' value='save' id='saveText" + id
-			        + "'></div>");
-			sb.append("<div id='drawingFooter'><input type='button' id='clearCanvas" + id
-			        + "' value='Clear canvas' /><input type='button' id='saveImage" + id + "' value='Done Drawing'/>");
-			sb.append("<input type='hidden' id='encodedImage" + id + "' name='encodedImage" + id + "' ");
-			sb.append("/><input type='file' id='imageUpload" + id + "' value='Open Image' /><span id='saveNotification" + id
-			        + "' style='display:none;color:#ffffff;float:right'>DRAWING SAVED</span> </div>");
+			sb.append("</div>");
+			sb.append("<div id='thicknessDiv" + id
+			        + "' class='tool dependendTool' style='display: none;float: left;margin-left: 5px' >");
+			sb.append("<div class='selection'>");
+			sb.append("<div style='float:left'>Thickness:</div><div id='thicknessSlider" + id
+			        + "' style='width:100px;float:right'></div>");
+			sb.append("</div>");
+			sb.append("</div>");
+			sb.append("<div id='annotationsVisibility"+id+"' class='iconDiv' style='color:#000000;cursor: pointer'>Hide Annotations</div>");
+			sb.append("<div id='undoDiv"
+			        + id
+			        + "' class='iconDiv tool'><img id='undo' src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/undo_icon.png' alt='undo' class='imageprop' /></div>");
+			sb.append("<div id='redoDiv"
+			        + id
+			        + "'class='iconDiv tool'><img id='redo' src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/redo_icon.png' alt='redo' class='imageprop' /></div>");
+			sb.append("<div id='undoRedoRateDiv' class='tool selection' style='float: left;margin-left: 5px;' >");
+			sb.append("Undo/Redo Rate:<select id='undoRedoRate"
+			        + id
+			        + "'><option>1x</option><option>3x</option><option>5x</option><option>10x</option><option>20x</option></select>");
+			sb.append("</div>");
+			sb.append("<div id='colorSelector" + id + "'  style='float: left' class='colorselector tool'>");
+			sb.append("<div class='colorselector_innerdiv'></div>");
+			sb.append("</div>");
+			sb.append("<div style='clear:both;'></div>");
+			
+			sb.append("</div>");
+			sb.append("<div id='canvasDiv" + id + "' class='canvasDiv'>");
+			
+			sb.append("</div>");
+			sb.append("<div id='templatesDialog" + id + "' title='Templates' style='display:none;position:relative'>");
+			String[] encodedTemplateNames = DrawingUtil.getAllTemplateNames();
+			if (encodedTemplateNames.length > 0) {
+				sb.append("<div style='position:relative'>");
+				sb.append("<div style='width:30%;height:100%;float:left;border:1px;;margin-bottom:10px'>");
+				sb.append("<b class='boxHeader'>Available Templates</b>");
+				sb.append("<div class='box'>");
+				sb.append("<div style='overflow-y: scroll;overflow-x:hidden;height:350px'>");
+				sb.append("<table>");
+				for (String encodedTemplateName : encodedTemplateNames) {
+					sb.append("<tr>");
+					sb.append("<td style='display:list-item;list-style:disc inside;'></td>");
+					sb.append("<td class='templateName' style='cursor:pointer'>"+encodedTemplateName+"</td>");
+					sb.append("</tr>");
+				}
+				sb.append("</table>");
+				sb.append("</div>");
+				sb.append("</div>");
+				sb.append("</div>");
+				sb.append("<div style='float:left;width:68%;margin-left:10px;margin-bottom:10px' >");
+				sb.append("<b class='boxHeader'>Preview</b>");
+				sb.append("<div class='box' style='height:350px'>");
+				sb.append("<img  src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/preview.png' id='templateImage"+id+"' class='templateImage'/>");
+				
+				sb.append("</div>");
+				sb.append("</div>");
+				
+				sb.append("</div>");
+				sb.append("<div style='clear:both'></div>");
+			} else {
+				sb.append("No Templates Uploaded");
+			}
+			sb.append("</div>");
+			sb.append("<div id='textAreaPopUp" + id + "' style='position:absolute;display:none;z-index:1;'>");
+			sb.append("<textarea id='writableTextarea" + id + "' style='width:100px;height:50px;'></textarea>");
+			sb.append("<input type='button' value='save' id='saveText" + id + "'/>");
+			sb.append("</div>");
+			sb.append("<div id='drawingFooter'>");
+			sb.append("<div class='tool'>");
+			sb.append("<input type='button' id='clearCanvas" + id + "' value='Clear Canvas' />");
+			sb.append("<input type='button' id='showTemplates" + id + "' value='Show Templates'/>");
+			sb.append("<input type='button' id='saveImage" + id + "' value='Done Drawing' />");
+			sb.append("<input type='file' id='imageUpload" + id + "' value='Open Image' /> ");
+			sb.append("<input type='hidden' id='encodedImage"+id+"' name='encodedImage"+id+"'>");
+			sb.append("<span id='saveNotification" + id
+			        + "' style='display:none;color:#ffffff;float:right'>DRAWING SAVED</span>");
+			sb.append("</div>");
+			sb.append("</div>");
 			sb.append("</div>");
 		}
 		return sb.toString();
 	}
-	*/
+	
 }
