@@ -4,7 +4,7 @@
 <script type="text/javascript">
 $j(document).ready(function(){
    $j('.templateName').click(function() {
-            $j.get(openmrsContextPath + "/module/drawing/getTemplate.form?templateName=" + $j(this).html(), function(data) {
+            $j.post(openmrsContextPath + "/module/drawing/getTemplate.form",{templateName: $j(this).html()}, function(data) {
                 //alert('got data'+data);
                 $j('.templateImage').attr('src', data);
             }).error(function() {
@@ -25,6 +25,17 @@ $j(document).ready(function(){
                 color: 'black'
             });
         });
+		
+		$j.expr[':'].Contains = function(a, i, m) { 
+            return $j(a).text().toUpperCase().indexOf(m[3].toUpperCase()) >= 0; 
+         };
+		
+		$j('#searchTemplates').keyup(function(){
+		     var search=$j(this).val();
+			  $j('.templateName').parent().show();
+			  if($j.trim(search) != ' ')
+			  $j('.templateName:not(:Contains('+search+'))').parent().hide();
+		});
 		
 		$j('.deleteIcon img').click(function(){
 			if(confirm("Do you want to delete this template"))
@@ -55,8 +66,9 @@ $j(document).ready(function(){
 			<div style="position:relative">
 				<div style="width:30%;height:100%;float:left;border:1px;;margin-bottom:10px">
 				    <b class="boxHeader"><spring:message code="drawing.availableTemplates"/></b>
-					<div class="box">
-						<div style="overflow-y: scroll;overflow-x:hidden;height:500px">
+					<div class="box" style="height:500px">
+					Search:<input type="search" id="searchTemplates" placeholder="search..."/>
+						<div style="overflow-y: scroll;overflow-x:hidden;height:465px">
 		       				<table>
 		       				 <c:forEach var="encodedTemplateName" items="${encodedTemplateNames}">
 							 <tr>
@@ -69,7 +81,7 @@ $j(document).ready(function(){
 					</div>
 				</div>
 				<div style="float:left;width:69%;margin-left:10px;margin-bottom:10px" >
-					<b class="boxHeader" style="">Preview</b>
+					<b class="boxHeader" style=""><spring:message code="drawing.preview"/></b>
 					<div class="box" style="height:500px">
 		        		 <img  src="<openmrs:contextPath/>/moduleResources/drawing/images/preview.png" class="templateImage"/>
 

@@ -20,6 +20,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -83,12 +84,12 @@ public class ManageTemplatesController {
 		
 	}
 	
-	@RequestMapping(value = "/module/drawing/getTemplate", method = RequestMethod.GET)
+	@RequestMapping(value = "/module/drawing/getTemplate", method = RequestMethod.POST)
 	public @ResponseBody
 	String getTemplate(@RequestParam(value="templateName",required=true)String templateName) {
 		String encodedImage=null;
 		try {
-	         encodedImage= DrawingUtil.getTemplateAsBase64ByName(templateName);
+	         encodedImage= DrawingUtil.getTemplateAsBase64ByName(StringEscapeUtils.unescapeHtml(templateName));
         }
         catch (IOException e) {
 	        log.error("unable to get the file", e);
@@ -97,10 +98,10 @@ public class ManageTemplatesController {
 		return encodedImage;
 		
 	}
-	@RequestMapping(value = "/module/drawing/deleteTemplate", method = RequestMethod.GET)
+	@RequestMapping(value = "/module/drawing/deleteTemplate", method = RequestMethod.POST)
 	public @ResponseBody
 	void deleteTemplate(@RequestParam(value="templateName",required=true)String templateName) {
-	       DrawingUtil.deleteTemplate(templateName);
+	       DrawingUtil.deleteTemplate(StringEscapeUtils.unescapeHtml(templateName));
 	}
 	
 }

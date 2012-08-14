@@ -224,8 +224,9 @@ import org.openmrs.web.WebConstants;
 				sb.append("<div style='position:relative'>");
 				sb.append("<div style='width:30%;height:100%;float:left;border:1px;;margin-bottom:10px'>");
 				sb.append("<b class='boxHeader'>Available Templates</b>");
-				sb.append("<div class='box'>");
-				sb.append("<div style='overflow-y: scroll;overflow-x:hidden;height:350px'>");
+				sb.append("<div class='box' style='height:350px'>");
+				sb.append("Search:<input type='search' id='searchTemplates' placeholder='search...'/>");
+				sb.append("<div style='overflow-y: scroll;overflow-x:hidden;height:315px'>");
 				sb.append("<table>");
 				for (String encodedTemplateName : encodedTemplateNames) {
 					sb.append("<tr>");

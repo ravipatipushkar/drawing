@@ -136,8 +136,10 @@
 		<div style="position:relative">
 				<div style="width:30%;height:100%;float:left;border:1px;;margin-bottom:10px">
 				    <b class="boxHeader"><spring:message code="drawing.availableTemplates"/></b>
-					<div class="box">
-						<div style="overflow-y: scroll;overflow-x:hidden;height:350px">
+					<div class="box" style="height:350px">
+					 Search:<input type="search" id="searchTemplates" placeholder="search..."/>
+						<div style="overflow-y: scroll;overflow-x:hidden;height:315px">
+						
 		       				<table>
 		       				 <c:forEach var="encodedTemplateName" items="${model.encodedTemplateNames}">
 							 <tr>

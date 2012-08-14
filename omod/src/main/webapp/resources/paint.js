@@ -61,21 +61,15 @@ function DrawingEditor(randomId) {
 
         var canvasDiv = document.getElementById('canvasDiv' + id);
         canvas = document.createElement('canvas');
-		//alert($j(canvasDiv).width());
         canvasWidth = $j(canvasDiv).width() - 20;
         canvasHeight = 500;
-        //alert($j(canvasDiv).width());
         $j(canvas).attr('width', canvasWidth).attr('height', canvasHeight).attr('id', 'canvas' + id);
-		//alert($j(canvasDiv).width());
         canvasDiv.appendChild(canvas);
-		//alert($j(canvasDiv).width());
         context = canvas.getContext("2d");
         $j('#encodedImage' + id).val(canvas.toDataURL());
         $j(canvas).mousedown(function(event) {
             clickX = getRelativeLeft(event.pageX) - this.offsetLeft;
             clickY = getRelativeTop(event.pageY) - this.offsetTop;
-            //alert(event.pageX+'   '+event.pageY);
-            //alert(clickX+'      '+clickY);
             if (selectedTool == "cursor") {
                 clicked = {
                     x: clickX,
@@ -171,6 +165,18 @@ function DrawingEditor(randomId) {
                 }
             }
         });
+        
+        
+        $j.expr[':'].Contains = function(a, i, m) { 
+            return $j(a).text().toUpperCase().indexOf(m[3].toUpperCase()) >= 0; 
+         };
+		
+		$j('#searchTemplates').keyup(function(){
+		     var search=$j(this).val();
+			  $j('.templateName').parent().show();
+			  if($j.trim(search) != ' ')
+			  $j('.templateName:not(:Contains('+search+'))').parent().hide();
+		});
 
         $j('#pencilDiv' + id).click(function() {
             selectedTool = 'pencil';
@@ -299,7 +305,7 @@ function DrawingEditor(randomId) {
         $j('#undoDiv' + id).mousedown(function() {
             $j(this).addClass("highlight");
 			var v=parseInt($j('#undoRedoRate'+id).val().split('x',1));
-            for	(var i=0;i<=v;i++)	{
+            for	(var i=0;i<v;i++)	{
             if (undoCollection.length <= 0) 
 			    break;
                 redoCollection.push(undoCollection.pop());
@@ -311,12 +317,12 @@ function DrawingEditor(randomId) {
         $j('#undoDiv' + id).mouseup(function() {
             $j(this).removeClass("highlight");
         });
-        //var v=undoCollection.pop();
-        //console.log( v.clickX+'   '+v.clickY+'   '+v.clickTool+"   "+v.clickColor+"   "+v.clickThickness+"   "+v.clickDrag);
+        
+        
         $j('#redoDiv' + id).mousedown(function() {
             $j(this).addClass("highlight");
 			var v=parseInt($j('#undoRedoRate'+id).val().split('x',1));
-            for	(var i=0;i<=v;i++)	{
+            for	(var i=0;i<v;i++)	{
             if (redoCollection.length <= 0) 
 			      break;
                 undoCollection.push(redoCollection.pop());
@@ -337,7 +343,7 @@ function DrawingEditor(randomId) {
         });
 
         $j('.templateName').click(function() {
-            $j.get(openmrsContextPath + "/module/drawing/getTemplate.form?templateName=" + $j(this).html(), function(data) {
+            $j.post(openmrsContextPath + "/module/drawing/getTemplate.form",{templateName: $j(this).html()}, function(data) {
                 $j('#templateImage'+id).attr('src', data);
             }).error(function() {
                 alert('Unable load Template');
@@ -431,7 +437,7 @@ function DrawingEditor(randomId) {
                 clickDrag: dragging,
                 italicStyle: italic,
                 boldStyle: bold,
-                text: $j('textarea #writableTextarea' + id).val()
+                text: $j('textarea#writableTextarea' + id).val()
             });
         } else if (tool === "cursor") {
             undoCollection.push({
@@ -501,17 +507,14 @@ function DrawingEditor(randomId) {
                 if (undoCollection[i].clickDrag && i) {
                     context.moveTo(undoCollection[i - 1].clickX, undoCollection[i - 1].clickY);
                 } else {
-                    // The x position is moved over one pixel so a circle even if not dragging
                     context.moveTo(undoCollection[i].clickX - 1, undoCollection[i].clickY);
                 }
                 context.lineTo(undoCollection[i].clickX, undoCollection[i].clickY);
 
                 // Set the drawing color
                 if (undoCollection[i].clickTool === "eraser") {
-                    //context.globalCompositeOperation = "destination-out"; // To erase instead of draw over with white
                     context.strokeStyle = 'white';
                 } else {
-                    //context.globalCompositeOperation = "source-over";    // To erase instead of draw over with white
                     context.strokeStyle = undoCollection[i].clickColor;
                 }
                 context.lineCap = "round";
@@ -681,14 +684,10 @@ function DrawingEditor(randomId) {
 
     function drawImage(imageObj, x, y) {
         if (canvas.height < imageObj.height) {
-            if (confirm("the size of image is greater than the size of canvas.this clears the canvas do you wish to continue")) {
                 canvas.height = imageObj.height;
-                //context.drawImage(imageObj,(canvas.width/2)-(imageObj.width/2),(canvas.height/2)-(imageObj.height/2));
                 context.drawImage(imageObj, x, y);
-            }
         } else {
             context.drawImage(imageObj, x, y);
-            //context.drawImage(imageObj,(canvas.width/2)-(imageObj.width/2),(canvas.height/2)-(imageObj.height/2));
         }
     }
 
