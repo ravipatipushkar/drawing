@@ -41,7 +41,7 @@ $j(document).ready(function(){
 			if(confirm("Do you want to delete this template"))
 			 {
 				var v=$j(this).parent().next();
-				 $j.get(openmrsContextPath + "/module/drawing/deleteTemplate.form?templateName=" + v.html());
+				 $j.post(openmrsContextPath + "/module/drawing/deleteTemplate.form",{templateName: v.html()});
 				$j(v).parent().remove();
 				$j('.templateImage').attr('src', openmrsContextPath+"/moduleResources/drawing/images/preview.png");
 				$j('.templateImage').css('width',$j('.templateImage').parent().width());
