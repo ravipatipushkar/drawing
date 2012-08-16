@@ -96,14 +96,14 @@
         
          <div class="editorContainer">
          <div id="drawingHeader">
-             <div id='cursorDiv' class='iconDiv tool'><img id='cursor' src="<openmrs:contextPath/>/moduleResources/drawing/images/cursor_icon.png" alt='cursor' class='imageprop' /></div>
+             <div id='cursorDiv' class='iconDiv tool' title="Cursor"><img id='cursor' src="<openmrs:contextPath/>/moduleResources/drawing/images/cursor_icon.png" alt='cursor' class='imageprop' /></div>
              <div id='doneMoving' class='iconDiv' style="display:none;color:#000000;cursor: pointer">Done Moving</div>
-			 <div id="pencilDiv" class="iconDiv tool"><img id="pencil" src="<openmrs:contextPath/>/moduleResources/drawing/images/pencil_icon.png" alt="pencil" class="imageprop" /></div>
-             <div id="eraserDiv" class="iconDiv tool"><img id="eraser" src="<openmrs:contextPath/>/moduleResources/drawing/images/eraser_icon.png" alt="eraser" class="imageprop" /></div>
-             <div id="textDiv" class="iconDiv tool"><img id="text" src="<openmrs:contextPath/>/moduleResources/drawing/images/text_icon.png" alt="text" class="imageprop" /></div>
+			 <div id="pencilDiv" class="iconDiv tool" title="Pencil"><img id="pencil" src="<openmrs:contextPath/>/moduleResources/drawing/images/pencil_icon.png" alt="pencil" class="imageprop" /></div>
+             <div id="eraserDiv" class="iconDiv tool" title="Eraser"><img id="eraser" src="<openmrs:contextPath/>/moduleResources/drawing/images/eraser_icon.png" alt="eraser" class="imageprop" /></div>
+             <div id="textDiv" class="iconDiv tool" title="Text"><img id="text" src="<openmrs:contextPath/>/moduleResources/drawing/images/text_icon.png" alt="text" class="imageprop" /></div>
              <div id='fontpropertiesDiv' class="tool dependendTool" style="display: none;float: left;margin-left: 5px" >
-                  <div id='boldDiv' class="iconDiv"><img src="<openmrs:contextPath/>/moduleResources/drawing/images/bold_icon.png" alt="bold" class="imageprop" /></div>
-                  <div id='italicDiv' class="iconDiv"><img src="<openmrs:contextPath/>/moduleResources/drawing/images/italic_icon.png" alt="italic"  class="imageprop"/></div>
+                  <div id='boldDiv' class="iconDiv" title="Bold"><img src="<openmrs:contextPath/>/moduleResources/drawing/images/bold_icon.png" alt="bold" class="imageprop" /></div>
+                  <div id='italicDiv' class="iconDiv" title="Italic"><img src="<openmrs:contextPath/>/moduleResources/drawing/images/italic_icon.png" alt="italic"  class="imageprop"/></div>
                   <div class="selection" >
                   	   <div style="float:left"><spring:message code="drawing.fontSize"/>:</div><div id="fontSlider" style="width:100px;float:right"></div>
                	  </div>
@@ -115,13 +115,13 @@
              </div>
 			 <div id='annotationsVisibility' class='iconDiv' style="color:#000000;cursor: pointer">Hide Annotations</div>
 			 
-             <div id="undoDiv" class="iconDiv tool"><img id="undo" src="<openmrs:contextPath/>/moduleResources/drawing/images/undo_icon.png" alt="undo" class="imageprop" /></div>
-             <div id="redoDiv" class="iconDiv tool"><img id="redo" src="<openmrs:contextPath/>/moduleResources/drawing/images/redo_icon.png" alt="redo" class="imageprop" /></div>
-             <div id='undoRedoRateDiv' class="tool selection" style="float: left;margin-left: 5px;" >
+             <div id="undoDiv" class="iconDiv tool" title="Undo"><img id="undo" src="<openmrs:contextPath/>/moduleResources/drawing/images/undo_icon.png" alt="undo" class="imageprop" /></div>
+             <div id="redoDiv" class="iconDiv tool" title="Redo"><img id="redo" src="<openmrs:contextPath/>/moduleResources/drawing/images/redo_icon.png" alt="redo" class="imageprop" /></div>
+             <div id='undoRedoRateDiv' class="tool selection" style="float: left;margin-left: 5px;" title="This allows you to set the number of moves you want to undo/redo">
                		<spring:message code="drawing.undoRedoRate"/>:<select id="undoRedoRate"><option>1x</option><option>3x</option><option>5x</option><option>10x</option><option>20x</option></select> 		
              </div>
 			 
-			 <div id="colorSelector"  style="float: left" class="colorselector tool">
+			 <div id="colorSelector"  style="float: left" class="colorselector tool" title="Color Picker">
                     <div class="colorselector_innerdiv"></div>     
              </div>
              <div style="clear:both;"></div>

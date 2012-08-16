@@ -72,7 +72,7 @@ $j(document).ready(function(){
 		       				<table>
 		       				 <c:forEach var="encodedTemplateName" items="${encodedTemplateNames}">
 							 <tr>
-							     <td class="deleteIcon"><img class="deleteIcon" src="<openmrs:contextPath/>/moduleResources/drawing/images/delete_icon.png" style="cursor:pointer"></td>
+							     <td class="deleteIcon"><img class="deleteIcon" src="<openmrs:contextPath/>/moduleResources/drawing/images/delete_icon.png" style="cursor:pointer" title="delete"></td>
                     			 <td class="templateName" style="cursor:pointer">${encodedTemplateName}</td>
                  			  </tr>
 							 </c:forEach>

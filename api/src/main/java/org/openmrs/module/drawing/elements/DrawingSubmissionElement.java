@@ -165,26 +165,26 @@ import org.openmrs.web.WebConstants;
 			sb.append("<div id='drawingHeader'>");
 			sb.append("<div id='cursorDiv"
 			        + id
-			        + "' class='iconDiv tool'><img id='cursor' src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/cursor_icon.png' alt='cursor' class='imageprop' /></div>");
+			        + "' class='iconDiv tool' title='Cursor'><img id='cursor' src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/cursor_icon.png' alt='cursor' class='imageprop' /></div>");
 			sb.append("<div id='doneMoving" + id
 			        + "' class='iconDiv' style='display:none;color:#000000;cursor: pointer'>Done Moving</div>");
 			sb.append("<div id='pencilDiv"
 			        + id
-			        + "' class='iconDiv tool'><img id='pencil' src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/pencil_icon.png' alt='pencil' class='imageprop' /></div>");
+			        + "' class='iconDiv tool' title='Pencil'><img id='pencil' src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/pencil_icon.png' alt='pencil' class='imageprop' /></div>");
 			sb.append("<div id='eraserDiv"
 			        + id
-			        + "' class='iconDiv tool'><img id='eraser' src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/eraser_icon.png' alt='eraser' class='imageprop' /></div>");
+			        + "' class='iconDiv tool' title='Eraser'><img id='eraser' src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/eraser_icon.png' alt='eraser' class='imageprop' /></div>");
 			sb.append("<div id='textDiv"
 			        + id
-			        + "' class='iconDiv tool'><img id='text' src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/text_icon.png' alt='text' class='imageprop' /></div>");
+			        + "' class='iconDiv tool' title='Text'><img id='text' src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/text_icon.png' alt='text' class='imageprop' /></div>");
 			sb.append("<div id='fontpropertiesDiv" + id
 			        + "' class='tool dependendTool' style='display: none;float: left;margin-left: 5px' >");
 			sb.append("<div id='boldDiv"
 			        + id
-			        + "' class='iconDiv'><img src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/bold_icon.png' alt='bold' class='imageprop' /></div>");
+			        + "' class='iconDiv' title='Bold'><img src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/bold_icon.png' alt='bold' class='imageprop' /></div>");
 			sb.append("<div id='italicDiv"
 			        + id
-			        + "' class='iconDiv'><img src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/italic_icon.png' alt='italic'  class='imageprop'/></div>");
+			        + "' class='iconDiv' title='Italic'><img src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/italic_icon.png' alt='italic'  class='imageprop'/></div>");
 			sb.append("<div class='selection' >");
 			sb.append("<div style='float:left'>Font Size:</div><div id='fontSlider" + id
 			        + "' style='width:100px;float:right'></div>");
@@ -200,16 +200,16 @@ import org.openmrs.web.WebConstants;
 			sb.append("<div id='annotationsVisibility"+id+"' class='iconDiv' style='color:#000000;cursor: pointer'>Hide Annotations</div>");
 			sb.append("<div id='undoDiv"
 			        + id
-			        + "' class='iconDiv tool'><img id='undo' src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/undo_icon.png' alt='undo' class='imageprop' /></div>");
+			        + "' class='iconDiv tool' title='Undo'><img id='undo' src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/undo_icon.png' alt='undo' class='imageprop' /></div>");
 			sb.append("<div id='redoDiv"
 			        + id
-			        + "'class='iconDiv tool'><img id='redo' src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/redo_icon.png' alt='redo' class='imageprop' /></div>");
-			sb.append("<div id='undoRedoRateDiv' class='tool selection' style='float: left;margin-left: 5px;' >");
+			        + "'class='iconDiv tool' title='Redo'><img id='redo' src='/"+WebConstants.WEBAPP_NAME+"/moduleResources/drawing/images/redo_icon.png' alt='redo' class='imageprop' /></div>");
+			sb.append("<div id='undoRedoRateDiv' class='tool selection' style='float: left;margin-left: 5px;' title='This allows you to set the number of moves you want to undo/redo'>");
 			sb.append("Undo/Redo Rate:<select id='undoRedoRate"
 			        + id
 			        + "'><option>1x</option><option>3x</option><option>5x</option><option>10x</option><option>20x</option></select>");
 			sb.append("</div>");
-			sb.append("<div id='colorSelector" + id + "'  style='float: left' class='colorselector tool'>");
+			sb.append("<div id='colorSelector" + id + "'  style='float: left' class='colorselector tool' title='Color Picker'>");
 			sb.append("<div class='colorselector_innerdiv'></div>");
 			sb.append("</div>");
 			sb.append("<div style='clear:both;'></div>");
