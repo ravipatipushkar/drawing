@@ -20,7 +20,7 @@
 	<activator>${project.parent.groupId}.${project.parent.artifactId}.DrawingActivator</activator>
 	
     <require_modules>
-	<require_module version="1.9.4">org.openmrs.module.htmlformentry</require_module>
+	<require_module version="2.0">org.openmrs.module.htmlformentry</require_module>
 	</require_modules>
 	
 	
