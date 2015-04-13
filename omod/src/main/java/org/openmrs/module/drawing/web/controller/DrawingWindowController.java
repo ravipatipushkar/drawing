@@ -27,6 +27,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 @Controller
 public class DrawingWindowController {
 	
@@ -50,7 +53,10 @@ public class DrawingWindowController {
 			o.setEncounter(encounter);
 			AnnotatedImage ai = new AnnotatedImage(DrawingUtil.base64ToImage(encodedImage));
 			ai.setAnnotations(DrawingUtil.getAnnotations(request, ""));
-			o.setComplexData(new ComplexData("drawingObs.png", ai));
+			String filename = "drawingObs" + new SimpleDateFormat("yyyyMMddhhmmssSSSSSSS").format(new Date()) + ".png";
+			o.setComplexData(new ComplexData(filename, ai));
+//			o.setComplexData(new ComplexData("drawingObs.png", ai));
+
 			Errors obsErrors = new BindException(o, "obs");
 			ValidationUtils.invokeValidator(new ObsValidator(), o, obsErrors);
 			if (!obsErrors.hasErrors()) {
