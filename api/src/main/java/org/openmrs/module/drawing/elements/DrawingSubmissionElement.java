@@ -25,6 +25,9 @@ import org.openmrs.module.htmlformentry.element.HtmlGeneratorElement;
 import org.openmrs.obs.ComplexData;
 import org.openmrs.web.WebConstants;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 //public class DrawingSubmissionElement {
 	public class DrawingSubmissionElement implements HtmlGeneratorElement, FormSubmissionControllerAction {
 	
@@ -71,12 +74,14 @@ import org.openmrs.web.WebConstants;
 		try {
 			AnnotatedImage ai = new AnnotatedImage(DrawingUtil.base64ToImage(encodedImage));
 			ai.setAnnotations(DrawingUtil.getAnnotations(submission, id));
-			if (session.getContext().getMode() == Mode.EDIT && existingObs != null)
+			if (session.getContext().getMode() == Mode.EDIT && existingObs != null){
 				session.getSubmissionActions().modifyObs(existingObs, questionConcept,
 				    new ComplexData(existingObs.getComplexData().getTitle(), ai), null, null);
-			else
-				session.getSubmissionActions().createObs(questionConcept, new ComplexData("drawingObs.png", ai), null, null);
-			
+			}else{
+				String filename = "drawingObs" + new SimpleDateFormat("yyyyMMddhhmmssSSSSSSS").format(new Date()) + ".png";
+				session.getSubmissionActions().createObs(questionConcept, new ComplexData(filename, ai), null, null);
+				//session.getSubmissionActions().createObs(questionConcept, new ComplexData("drawingObs.png", ai), null, null);
+			}
 		}
 		catch (Exception e) {
 			log.error("cannot create obs :" + e.getMessage(), e);
